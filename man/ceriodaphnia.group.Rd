@@ -10,13 +10,12 @@ Ceriodaphnia dubia are water fleas used to test the impact of effluents on water
 \usage{data(ceriodaphnia.group)}
 \format{
   The format is:
-List of 2
- $ covariates :'data.frame':	5 obs. of  4 variables:
-  ..$ vdose   : num [1:5] 0 1.56 3.12 6.25 12.5
-  ..$ vdose2  : num [1:5] 0 2.44 9.77 39.06 156.25
-  ..$ fdose   : Factor w/ 5 levels "0","1.5625","3.125",..: 1 2 3 4 5
-  ..$ twofdose: Factor w/ 2 levels "0","1": 1 1 2 2 1
- $ list.counts:List of 5
+List of 5
+ $ vdose       : num [1:5] 0 1.56 3.12 6.25 12.5
+ $ vdose2      : num [1:5] 0 2.44 9.77 39.06 156.25
+ $ fdose       : Factor w/ 5 levels "0","1.5625","3.125",..: 1 2 3 4 5
+ $ twofdose    : Factor w/ 2 levels "0","1": 1 1 2 2 1
+ $ number.young:List of 5
   ..$ : num [1:32] 0 0 0 0 0 0 0 0 0 0 ...
   ..$ : num [1:36] 0 0 0 0 0 0 0 0 0 0 ...
   ..$ : num [1:45] 0 0 0 0 0 0 0 0 0 0 ...

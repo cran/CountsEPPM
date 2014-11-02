@@ -49,7 +49,6 @@ David M. Smith <david.m.smith@truvenhealth.com>
 }
 \examples{
 all.counts=c(rep(0,5),352,479,530,291,101,17)
-
 nmax1  <- length(all.counts)
 nmax   <- nmax1 - 1
 cnum   <- 0:nmax
@@ -57,21 +56,19 @@ ncount <- sum(all.counts)
 all.mean <- sum(cnum*all.counts)/ncount 
 all.variance <- (sum(cnum*cnum*all.counts) - ncount*all.mean*all.mean) / (ncount - 1)
 alldata <- data.frame(all.mean,all.variance)
-
 mf  <- model.frame(formula=all.mean~1,data=alldata)
-covariates.matrix.mean <- model.matrix(attr(mf,'terms'),data=mf)
+covariates.matrix.mean <- model.matrix(attr(mf,"terms"),data=mf)
 mf  <- model.frame(formula=all.variance~1,data=alldata)
-covariates.matrix.variance <- model.matrix(attr(mf,'terms'),data=mf)
-listcounts <- list(all.counts)
-
+covariates.matrix.variance <- model.matrix(attr(mf,"terms"),data=mf)
+list.counts <- list(all.counts)
 parameter <- c(1.8388023,0.6009881)
+names(parameter) <- c("beta0 log(mean)","beta0 log(variance)") 
 vnmax <- c(10)
-names(parameter) <- c('beta0 log(mean)','beta0 log(variance)') 
 offset.mean     <- matrix(c(rep(0,nrow(covariates.matrix.mean))),ncol=1)
 offset.variance <- matrix(c(rep(0,nrow(covariates.matrix.mean))),ncol=1)
 output <- Model.FaddyJMV.limiting(parameter,covariates.matrix.mean,
                     covariates.matrix.variance,offset.mean,offset.variance, 
-                    scale.factor.model='no',vnmax)
+                    scale.factor.model="no",vnmax)
 print(output)
 }
 \keyword{ models }

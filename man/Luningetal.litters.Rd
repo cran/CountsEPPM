@@ -10,11 +10,10 @@ The data are arranged as a list of grouped counts where the grouping is by dose 
 \usage{data(Luningetal.litters)}
 \format{
   The format is:
-List of 2
- $ covariates :'data.frame':	3 obs. of  2 variables:
-  ..$ vdose: num [1:3] 0 300 600
-  ..$ fdose: Factor w/ 3 levels "0","300","600": 1 2 3
- $ list.counts:List of 3
+List of 3
+ $ vdose        : num [1:3] 0 300 600
+ $ fdose        : Factor w/ 3 levels "0","300","600": 1 2 3
+ $ number.trials:List of 3
   ..$ : num [1:11] 0 0 0 0 0 71 156 224 150 70 ...
   ..$ : num [1:11] 0 0 0 0 0 121 170 186 99 24 ...
   ..$ : num [1:11] 0 0 0 0 0 160 153 120 45 7 ...

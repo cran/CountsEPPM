@@ -8,7 +8,8 @@ Constructs a data frame of summary distributional information i.e. means, varian
 (optionally) probabilities from the fitted model information output from CountsEPPM.
 }
 \usage{
-CountsEPPM.distribution(output.fn, output.probabilities = 'no')
+CountsEPPM.distribution(output.fn, output.probabilities = "no", 
+output.FDparameters = "no")
 }
 \arguments{
   \item{output.fn}{
@@ -18,11 +19,16 @@ This is the object output by CountsEPPM.
 Text input 'no' or 'yes' stating whether or not the vectors of probabilities for the fitted 
 model output of output.fn should be included.
 }
+  \item{output.FDparameters}{
+Text input 'no' or 'yes' stating whether or not the vectors of parameters of the underlying 
+Faddy distributions for the model output of output.fn should be included.
+}
 }
 \details{
 The object output by this function is a data frame consisting of means and variances for the 
-fitted model of output.fn together (optionally) with the related vectors of probabilities. 
-If the model.type is 'mean only' only the means and variances calculated from the vectors of 
+fitted model of output.fn together (optionally) with related vectors of probabilities and/or 
+the vectors of parameters of the Underlying Faddy distributions. If the model.type is 
+'mean only' only the means and variances calculated from the vectors of 
 probabilities are output, their variable names being mean.prob and variance.prob respectively. 
 If the model.type is 'mean and variance' then the means and variances calculated from estimates 
 of the parameters and their associated design matrices are also output, in which case their variable 
@@ -49,7 +55,8 @@ David M. Smith <david.m.smith@truvenhealth.com>
 \dontrun{
 output.distribution <- CountsEPPM.distribution(output.fn)
 output.fn$vnmax <- output.fn$vnmax + 60
-output.distribution <- CountsEPPM.distribution(output.fn,output.probabilities='yes')
+output.distribution <- CountsEPPM.distribution(output.fn,output.probabilities="yes",
+                                               output.FDparameters = "yes")
 }
 }
 \keyword{ distribution }

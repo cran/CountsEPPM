@@ -1,8 +1,10 @@
 Model.Faddy <-
-function(parameter,model.type,model,covariates.matrix.mean,
-                offset.mean,vnmax) {
+function(parameter,model,covariates.matrix.mean,
+                offset.mean,fixed.b,vnmax) {
 #  data as number of trials & number of successes
-#  the parameters log(b) & c are scalars and are the last parameters in the parameter vector   
+#  the parameters c & log(b) are scalars and are the last parameters in the parameter vector   
+#  the order of parameters is a, c, b to match with the other functions, b being the nuisance
+#  parameter
    nobs <- nrow(covariates.matrix.mean) 
 #  covariate matrix for parameter a
    npar.one <- ncol(covariates.matrix.mean)
@@ -17,20 +19,32 @@ function(parameter,model.type,model,covariates.matrix.mean,
    if (model=="negative binomial") { npar <- npar + 1 
                                      b <- exp(parameter[npar])
                                      c <- 1 } # end of model
+# parameter b fixed
+   if (model=="negative binomial fixed b") { b <- fixed.b 
+                                             c <- 1 } # end of model
    if (model=="Faddy distribution") { nparm1 <- npar + 1
                                       npar   <- npar + 2 
-                                      b <- exp(parameter[nparm1])
+                                      c <- parameter[nparm1]
+                                      b <- exp(parameter[npar]) } # end of model
+# parameter b fixed
+   if (model=="Faddy distribution fixed b") { npar <- npar + 1
+                                      b <- fixed.b 
                                       c <- parameter[npar] } # end of model
    probabilities <- rep(list(0),nobs)
    threeparameter[2] <- b
    threeparameter[3] <- c 
+# vectors of Faddy distribution parameters
+   out.va <- va
+   out.vb <- rep(b,nobs)
+   out.vc <- rep(c,nobs)
    for ( i in 1:nobs) { threeparameter[1] <- va[i] 
                         nmax              <- vnmax[i]
                         nmax1             <- nmax + 1 
                         vid               <- c(0:nmax)
                         if (c<=1) { probability <- Faddyprob.general(threeparameter,nmax)
-# c > 1 indicated, all probabilities set to very small value
-                                  } else { probability <- rep(1.e-8,nmax1) } # end of if
-                        probabilities[[i]] <- probability }
-   output <- list(model=model,estimates=parameter,probabilities=probabilities)
+# c > 1 indicated, all probabilities set to 0
+                                  } else { probability <- rep(0,nmax1) } # end of if c<=1
+                        probabilities[[i]] <- probability } # end of for i
+   output <- list(model=model,estimates=parameter,probabilities=probabilities,
+                  FDparameters=data.frame(out.va,out.vb,out.vc))
    return(output)        }

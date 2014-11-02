@@ -1,15 +1,15 @@
-\name{F.Regression.Counts}
-\alias{F.Regression.Counts}
+\name{LL.Regression.Counts}
+\alias{LL.Regression.Counts}
 \title{
-Function called by optim or LL.Regression.Counts for calling by nlm to perform the fitting of the regression models to the count data.
+Function called by nlm to perform the fitting of the regression models to the count data. It includes within it a call to LL.Regression.Counts which function it is almost the same as except for the calculation and output of gradients from the package numDeriv.
 }
 \description{
 Fits specified regression models to the data.
 }
 \usage{
-F.Regression.Counts(parameter, model.type, model, list.counts, 
+LL.Regression.Counts(parameter, model.type, model, list.counts, 
 covariates.matrix.mean, covariates.matrix.variance, 
-offset.mean, offset.variance, ltvalue, utvalue, 
+offset.mean, offset.variance, ltvalue, utvalue,
 scale.factor.model, fixed.b)
 }
 \arguments{
@@ -53,7 +53,7 @@ Set to the value of the parameter b if a fixed.b model is being used.
 }
 }
 \value{
-The log likelihood is returned.
+The log likelihood with an attribute of the gradients produced by the function grad from the package numDerive is returned.
 }
 \author{
 David M. Smith <david.m.smith@truvenhealth.com>
@@ -80,7 +80,7 @@ parameter <- c(1.8388023,0.6009881)
 names(parameter) <- c("beta0 log(mean)","beta0 log(variance)") 
 offset.mean     <- matrix(c(rep(0,nrow(covariates.matrix.mean))),ncol=1)
 offset.variance <- matrix(c(rep(0,nrow(covariates.matrix.mean))),ncol=1)
-output <- F.Regression.Counts(parameter,model.type="mean and variance",
+output <- LL.Regression.Counts(parameter,model.type="mean and variance",
                model="limiting",list.counts,
                covariates.matrix.mean,covariates.matrix.variance,
                offset.mean,offset.variance,ltvalue=4,utvalue=11,

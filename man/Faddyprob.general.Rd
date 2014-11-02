@@ -28,12 +28,9 @@ David M. Smith <david.m.smith@truvenhealth.com>
 }
 \examples{
 all.counts=c(rep(0,5),352,479,530,291,101,17)
-
-nmax1  <- length(all.counts)
-nmax   <- nmax1 - 1
-
-parameter <- c(1.8386079,0.6021198,6.0714071)
-names(parameter) <- c('beta0 log(mean)','beta0 log(variance)','log(b)') 
+nmax   <- length(all.counts) - 1
+parameter <- c(exp(53.047752),exp(3.801599),-13.205655)
+names(parameter) <- c("a","b","c") 
 probability <- Faddyprob.general(parameter,nmax) 
 print(probability)
 }

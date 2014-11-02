@@ -10,11 +10,9 @@ The data are the numbers of attempts at foraging by 20 adult and 20 immature gre
 \usage{data(herons.group)}
 \format{
   The format is:
-List of 3
- $ covariates :'data.frame':	2 obs. of  1 variable:
-  ..$ group: Factor w/ 2 levels " Adult"," Immature": 1 2
- $ offset.mean: num [1:2] 1 1
- $ list.counts:List of 2
+List of 2
+ $ group          : Factor w/ 2 levels " Adult"," Immature": 1 2
+ $ number.attempts:List of 2
   ..$ : num [1:25] 0 5 2 1 1 1 0 2 0 1 ...
   ..$ : num [1:26] 0 2 2 1 5 1 2 2 1 1 ...
 }
