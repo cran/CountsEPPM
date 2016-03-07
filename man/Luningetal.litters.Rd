@@ -19,7 +19,8 @@ List of 3
   ..$ : num [1:11] 0 0 0 0 0 160 153 120 45 7 ...
 }
 \source{
-Luning K, Sheridan W, Ytterborn K, Gullberg U (1966). The relationship between the number of implantations and the rate of intra-uterine death in mice. Mutation Research, 3, 444-451.
+Luning K, Sheridan W, Ytterborn K, Gullberg U (1966). The relationship between the number of implantations and the rate of intra-uterine death in mice. 
+\emph{Mutation Research}, \bold{3}, 444-451. \doi{10.1016/0027-5107(66)90054-6}.
 }
 \examples{
 data(Luningetal.litters)

@@ -26,10 +26,12 @@ List of 5
 The data is used in Faddy and Smith (2011) as an example. Faddy and Smith (2011) is the main reference for the methods implemented. The data are grouped into number of fleas for each count value.
 }
 \source{
-Bailer, A., Oris, J. (1997). Estimating inhibition concentrations for different response scales using Generalized Linear Models. Environmental Toxicology and Chemistry, 16, 1554-1559.
+Bailer, A., Oris, J. (1997). Estimating inhibition concentrations for different response scales using Generalized Linear Models. 
+\emph{Environmental Toxicology and Chemistry}, \bold{16}, 1554-1559. \doi{10.1002/etc.5620160732}.
 }
 \references{
-Faddy, M., Smith, D. (2011). Analysis of count data with covariate dependence in both mean and variance. Journal of Applied Statistics, 38, 2683-2694.
+Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 
+\emph{Journal of Applied Statistics}, \bold{38}, 2683-2694. \doi{10.1002/bimj.201100214}.
 }
 \examples{
 data(ceriodaphnia.group)

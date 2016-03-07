@@ -17,7 +17,8 @@ List of 2
   ..$ : num [1:26] 0 2 2 1 5 1 2 2 1 1 ...
 }
 \source{
-Zhu J, Eickhoff J, Kaiser M (2003). Modelling the Dependence between Number of Trials and Success Probability in Beta-Binomial-Poisson Mixture Distributions. Biometrics, 59,955-961.
+Zhu J, Eickhoff J, Kaiser M (2003). Modelling the Dependence between Number of Trials and Success Probability in Beta-Binomial-Poisson Mixture Distributions. 
+\emph{Biometrics}, \bold{59}, 955-961. \doi{10.1111/j.0006-341x.2003.00110.x}.
 }
 \examples{
 data(herons.group)

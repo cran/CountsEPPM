@@ -538,4 +538,5 @@ if (inerror==0) {
                        estses=data.frame(NA,NA,NA),
                        vnmax=NA,loglikelihood=NA,
                        mean.obs=mean.obs,variance.obs=variance.obs) } # inerror if else
+     attr(output.fn, "class") <- c("CountsEPPM")
           return(output.fn)     }

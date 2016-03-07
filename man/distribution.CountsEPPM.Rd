@@ -1,5 +1,5 @@
-\name{CountsEPPM.distribution}
-\alias{CountsEPPM.distribution}
+\name{distribution.CountsEPPM}
+\alias{distribution.CountsEPPM}
 \title{
 Produce summary distributional information for fitted model.
 }
@@ -8,7 +8,7 @@ Constructs a data frame of summary distributional information i.e. means, varian
 (optionally) probabilities from the fitted model information output from CountsEPPM.
 }
 \usage{
-CountsEPPM.distribution(output.fn, output.probabilities = "no", 
+distribution.CountsEPPM(output.fn, output.probabilities = "no", 
 output.FDparameters = "no")
 }
 \arguments{
@@ -53,9 +53,9 @@ David M. Smith <david.m.smith@truvenhealth.com>
 }
 \examples{
 \dontrun{
-output.distribution <- CountsEPPM.distribution(output.fn)
+output.distribution <- distribution.CountsEPPM(output.fn)
 output.fn$vnmax <- output.fn$vnmax + 60
-output.distribution <- CountsEPPM.distribution(output.fn,output.probabilities="yes",
+output.distribution <- distribution.CountsEPPM(output.fn,output.probabilities="yes",
                                                output.FDparameters = "yes")
 }
 }

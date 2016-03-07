@@ -48,6 +48,9 @@ Takes one of the two values 'yes' or 'no' where 'yes' means that a model where t
 Set to the value of the parameter b if a fixed.b model is being used.
 }
 }
+\details{
+Smith and Faddy (2016) gives further details as well as examples of use.
+}
 \value{
 \item{model.type}{The type of model being fitted}
 \item{model}{The model being fitted}
@@ -64,16 +67,19 @@ Set to the value of the parameter b if a fixed.b model is being used.
 }
 \references{
 Cribari-Neto F, Zeileis A. (2010). Beta Regression in R.
-Journal of Statistical Software, 34(2), 1-24. URL http://www.jstatsoft.org/v34/i02/.
+\emph{Journal of Statistical Software}, \bold{34}(2), 1-24. \doi{10.18637/jss.v034.i02}.
 
 Grun B, Kosmidis I, Zeileis A. (2012). Extended Beta Regression in R: Shaken, Stirred, Mixed, and Partitioned.
-Journal of Statistical Software, 48(11), 1-25. URL http://www.jstatsoft.org/v48/i11/.
+\emph{Journal of Statistical Software}, \bold{48}(11), 1-25. \doi{10.18637/jss.v048.i11}.
 
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 
-Journal of Applied Statistics, 38, 2683-2694.
+\emph{Journal of Applied Statistics}, \bold{38}, 2683-2694. \doi{10.1002/bimj.201100214}.
+
+Smith D, Faddy M. (2016). Mean and Variance Modeling of Under- and Overdispersed Count Data. 
+\emph{Journal of Statistical Software}, \bold{69}(6), 1-23. \doi{10.18637/jss.v069.i06}.
 
 Zeileis A, Croissant Y. (2010). Extended Model Formulas in R: Multiple Parts and Multiple Responses.
-Journal of Statistical Software, 34(XYZ), 1-12. URL http://www.jstatsoft.org/v34/iXYZ/.
+\emph{Journal of Statistical Software}, \bold{34}(1), 1-13. \doi{10.18637/jss.v034.i01}.
 }
 \author{
 David M. Smith <david.m.smith@truvenhealth.com>
@@ -86,6 +92,6 @@ output.fn <- CountsEPPM(number.attempts~0+group,herons.group,
              model.type='mean only',model='negative binomial',
              optimization.method='nlm',initial=initial,
              control=list(iterlim=1))
-CountsEPPM.summary(output.fn)
+print(output.fn)
 }
 \keyword{ models }

@@ -31,7 +31,7 @@ Data of the number of bids received by 126 U.S. firms that were targets of tende
 Data originally from Jaggia and Thosar (1993) and used as examples in Cameron and Johansson (1997), Cameron and Trivedi (2013), Saez-Castillo and Conde-Sanchez (2013). 
 }
 \source{
-Stata data file obtained from A. C. Cameron's webpage: http://cameron.econ.ucdavis.edu/
+Stata data file obtained from A. C. Cameron's webpage: \url{http://cameron.econ.ucdavis.edu/}.
 
 Read into R using the following code.
 
@@ -43,15 +43,15 @@ takeover.bids.case <- data.ch5
 }
 \references{
 Cameron, A.C., Johansson, P. (1997). Count Data Regression Models using Series Expansions: with Applications. 
-Journal of Applied Econometrics 12, pp.203-223.
+\emph{Journal of Applied Econometrics}, \bold{12}, pp.203-223. \doi{10.1002/(sici)1099-1255(199705)12:3<203::aid-jae446>3.0.co;2-2}
 
 Cameron, A.C., Trivedi, P.K. (2013). Regression Analysis of Count Data. Cambridge University Press, second edition.
 
 Jaggia, S., Thosar, S. (1993). Multiple Bids as a Consequence of Target Management Resistance.
-Review of Quantitative Finance and Accounting, 447-457.
+\emph{Review of Quantitative Finance and Accounting}, 447-457.
 
 Saez-Castillo, A.J., Conde-Sanchez, A. (2013). A hyper-Poisson regression model for overdispersed and underdispersed count data.
-Computational Statistics and Data Analysis, 61, 148-157.
+\emph{Computational Statistics and Data Analysis}, \bold{61}, 148-157.\doi{10.1016/j.csda.2012.12.009}
 }
 \examples{
 data(takeover.bids.case)

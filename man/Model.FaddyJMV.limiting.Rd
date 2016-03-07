@@ -42,7 +42,8 @@ The list output with elements
 \item{probabilities}{Vector of probabilities}
 }
 \references{
-Faddy M, Smith D (2011). Analysis of count data with covariate dependence in both mean and variance. Journal of Applied Statistics, 38, 2683-2694.
+Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 
+\emph{Journal of Applied Statistics}, \bold{38}, 2683-2694. \doi{10.1002/bimj.201100214}.
 }
 \author{
 David M. Smith <david.m.smith@truvenhealth.com>

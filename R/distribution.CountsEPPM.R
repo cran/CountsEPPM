@@ -1,4 +1,4 @@
-CountsEPPM.distribution <-
+distribution.CountsEPPM <-
 function(output.fn,output.probabilities='no',
                                        output.FDparameters='no') {
           if (is.finite(output.fn$loglikelihood)==TRUE) { 
