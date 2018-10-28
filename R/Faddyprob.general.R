@@ -14,11 +14,17 @@ function(parameter,nmax) {
 # this check is introduced to handle situations where this function
 # is called from outside Model.Faddy e.g., when testing the package
 # examples
-   if (c>1) { cat('\n','c value > 1 as argument to Faddyprob.general',
-                  '\n')
+   if (c>1) { cat("\n","c value > 1 as argument to Faddyprob.general",
+                  "\n")
               c <- 1 } # end if c>1
-   if ((c<1) & (c!=0)) { vlambda <- exp(log(va)+vc*log(vb+vnum))
-                                 } # end if c < 1
+   if ((c<1) & (c!=0)) { vlambda <- exp(log(va)+vc*log(vb+vnum)) 
+# limiting value for lambda
+      lambda.limit <- 745
+      vlambda <- sapply(1:nmax1, function(j) 
+         if ((is.finite(vlambda[j])==FALSE) | (vlambda[j]>lambda.limit)) { 
+            vlambda[j] <- lambda.limit  
+               } else { vlambda[j] <- vlambda[j] } )
+                       } # end if c < 1 & = 0
 # if c=0 using Poisson function for probabilities
 # if c=1 using negative binomial distribution for probabilities
 # only using the EPPM form for c not equal to 0 or 1

@@ -1,5 +1,5 @@
 logLik.CountsEPPM <-
 function (object, ...) {
-      structure(object$loglikelihood, df = nrow(object$estses),
+      structure(object$loglik, df = length(object$optim$par),
                 nobs = nrow(object$covariates.matrix.mean),
                 class = "logLik") }

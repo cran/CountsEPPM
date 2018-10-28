@@ -18,12 +18,13 @@ currently not used.
 }
 }
 \author{
-David M. Smith <david.m.smith@truvenhealth.com>
+David M. Smith <smithdm1@us.ibm.com>
 }
 \examples{
 \dontrun{
-output.fn <- CountsEPPM(mean.obs~1,Luningetal.all,model.type,model,initial,
-                         ltvalue=4,utvalue=11,optimization.method="nlm")
+output.fn <- CountsEPPM(mean.obs ~1, Luningetal.all,
+ model.type,model, initial, ltvalue = 4, utvalue = 11,
+ optimization.method = "nlm")
 logLik.CountsEPPM(object=output.fn)
 }
 }

@@ -19,7 +19,7 @@ Using Generalized Linear Model (GLM) terminology, the functions utilize linear p
 to fit the regression models. Smith and Faddy (2016) gives further details about the package as well as examples of its use.
 }
 \author{
-David M. Smith <david.m.smith@truvenhealth.com>
+David M. Smith <smithdm1@us.ibm.com>
 }
 \references{
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 
@@ -35,9 +35,7 @@ Zeileis A, Croissant Y. (2010). Extended Model Formulas in R: Multiple Parts and
 \examples{
 data(herons.group)
 initial <- c(1.9871533,1.9900881,3.6841305,0.4925816)
-names(initial) <- c("Adult mean","Immature mean",
-                    "Variance","log(b)")
-output.fn  <- CountsEPPM(number.attempts~0+group | 1,
-                         herons.group,initial=initial)
+names(initial) <- c("Adult mean","Immature mean", "Variance","log(b)")
+output.fn  <- CountsEPPM(number.attempts~0+group | 1, herons.group,initial=initial)
 print(output.fn)
 }

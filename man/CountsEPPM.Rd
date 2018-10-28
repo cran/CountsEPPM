@@ -7,9 +7,10 @@ Fitting of EPPM models to count data.
 Fits regression models to under- and over-dispersed count data using extended Poisson process models.
 }
 \usage{
-CountsEPPM(formula, data, model.type = "mean and variance", model = "general", 
-offset = NULL, initial = NULL, ltvalue = NA, utvalue = NA, 
-optimization.method = "optim", control = NULL, scale.factor.model = "no", fixed.b = NA)
+CountsEPPM(formula, data, subset=NULL, na.action=NULL, weights=NULL,
+model.type = "mean and scale-factor", model.name = "general", 
+link="log", initial = NULL, ltvalue = NA, utvalue = NA, 
+method = "Nelder-Mead", control = NULL, fixed.b = NA)
 }
 \arguments{
   \item{formula}{
@@ -18,14 +19,24 @@ Formulae for the mean and variance. The package 'Formula' of Zeileis and Croissa
   \item{data}{
 'data' should be either a data frame (as for use of 'glm') or a list (as required in Version 1.0 of this function). The list should be exactly the same as for a data frame except that the response variable is a list of vectors of frequency distributions rather than a vector of single counts as for the data frame. Within the function a working list 'listcounts' and data frames with components such as 'mean.obs', 'variance.obs', 'scalef.obs', 'covariates', 'offset.mean', 'offset.variance' are set up . The component 'covariates' is a data frame of vectors of covariates in the model. The component 'listcounts' is a list of vectors of the grouped counts, or the single counts in grouped form if 'data' is a data frame. 
 }
+  \item{subset}{
+Subsetting commands.
+}
+  \item{na.action}{
+Action taken for NAs in data.
+}
+  \item{weights}{
+Vector of list of lists of weights.
+}
   \item{model.type}{
 Takes one of two values i.e. 'mean only' or 'mean and variance'. The 'mean only' value fits a linear predictor function to the parameter 'a' in equation (3) of Faddy and Smith (2011). If the model type being fitted is Poisson modeling 'a' is the same as modeling the mean. For the negative binomial the mean is 'b'(exp('a')-1), 'b' also being as in equation (3) of Faddy and Smith (2011). The 'mean and variance' value fits linear predictor functions to both the mean and the variance. 
 }
-  \item{model}{
-If model.type is 'mean only' the model being fitted is one of the three 'Poisson', 'negative binomial', 'Faddy distribution'. If model.type is 'mean and variance' the model being fitted is either 'general' i.e. as equations (4) and (6) of Faddy and Smith (2011), or 'limiting' i.e. as equations (9) and (10) of Faddy and Smith (2011).
+  \item{model.name}{
+If model.type is 'mean only' the model being fitted is one of the three 'Poisson', 'negative binomial', 'Faddy distribution'. If model.type is 'mean and scale-factor' the model being fitted is either 'general' i.e. as equations (4) and (6) of Faddy and Smith (2011), or 'limiting' i.e. as equations (9) and (10) of Faddy and Smith (2011).
 }
-  \item{offset}{
-'offset' is a one or two component object of vectors of offsets for the mean and variance respectively. }
+  \item{link}{
+Takes one of one values i.e., 'log'. The default is 'log'. 
+}
   \item{initial}{
 This is a vector of initial values for the parameters. If this vector is NULL then initial values based on a fitting Poisson models using 'glm' are calculated within the function.
 }
@@ -35,14 +46,11 @@ Lower truncation value.
   \item{utvalue}{
 Upper truncation value.
 }
-  \item{optimization.method}{
-Takes one of the two values 'optim' or 'nlm' these being R optimization functions.
+  \item{method}{
+Optimization method takes one of the two values 'Nelder-Mead' or 'BFGS' these being options for the \code{optim} function.
 }
   \item{control}{
 'control' is a list of control parameters as used in 'optim' or 'nlm'. If this list is NULL the defaults for 'optim' are set as 'control   <- list(fnscale=-1,trace=0,maxit=1000)' and for 'nlm' are set as 'control <- list(fscale=1,print.level=0,stepmax=1,gradtol=1e-8,steptol=1e-10,iterlim=500)'. For 'optim' the control parameters that can be changed by inputting a variable length list are 'fnscale, trace, maxit, abstol, reltol, alpha, beta, gamma'. For 'nlm' the parameters are 'fscale, print.level, stepmax, gradtol,steptol, iterlim'. Details of 'optim' and 'nlm' and their control parameters are available in the online R help manuals.
-}
-  \item{scale.factor.model}{
-Takes one of the two values 'yes' or 'no' where 'yes' means that a model where the variance is expressed as a scale factor of the mean is desired. It only applies to 'mean and variance models' and the default is 'no'.
 }
   \item{fixed.b}{
 Set to the value of the parameter b if a fixed.b model is being used.
@@ -60,7 +68,6 @@ Smith and Faddy (2016) gives further details as well as examples of use.
 \item{offset.variance}{The offset vector for the variances}
 \item{ltvalue}{The lower truncation value}
 \item{utvalue}{The upper truncation value}
-\item{scale.factor.model}{Whether a scale factor model is desired no:yes}
 \item{estimates}{Estimates of model parameters}
 \item{vnmax}{Vector of maximums of grouped count data vectors in list.counts}
 \item{loglikelihood}{Loglikelihood}
@@ -82,16 +89,15 @@ Zeileis A, Croissant Y. (2010). Extended Model Formulas in R: Multiple Parts and
 \emph{Journal of Statistical Software}, \bold{34}(1), 1-13. \doi{10.18637/jss.v034.i01}.
 }
 \author{
-David M. Smith <david.m.smith@truvenhealth.com>
+David M. Smith <smithdm1@us.ibm.com>
 }
 \examples{
 data(herons.group)
-initial <- c(0.5623042,0.4758576,0.5082486)
-names(initial) <- c("Adult mean","Immature mean","log(b)")
-output.fn <- CountsEPPM(number.attempts~0+group,herons.group,
-             model.type='mean only',model='negative binomial',
-             optimization.method='nlm',initial=initial,
-             control=list(iterlim=1))
+initial <- c(0.5623042, 0.4758576, 0.5082486)
+names(initial) <- c("Adult mean", "Immature mean", "log(b)")
+output.fn <- CountsEPPM(number.attempts ~ 0 + group,
+ herons.group, model.type = 'mean only', model = 'negative binomial',
+ initial = initial)
 print(output.fn)
 }
 \keyword{ models }

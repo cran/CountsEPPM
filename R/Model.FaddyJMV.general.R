@@ -1,27 +1,25 @@
 Model.FaddyJMV.general <-
-function(parameter,covariates.matrix.mean,
-                    covariates.matrix.variance,offset.mean,offset.variance, 
-                    scale.factor.model,fixed.b,vnmax) {
-   nobs          <- nrow(covariates.matrix.mean)
-   npar.mean     <- ncol(covariates.matrix.mean)
-   npar.variance <- ncol(covariates.matrix.variance)
-   npar <- npar.mean + npar.variance
+function(parameter,link,covariates.matrix.mean,
+                    covariates.matrix.scalef,offset.mean,offset.scalef, 
+                    fixed.b,vnmax) {
+   nobs        <- nrow(covariates.matrix.mean)
+   npar.mean   <- ncol(covariates.matrix.mean)
+   npar.scalef <- ncol(covariates.matrix.scalef)
+   npar <- npar.mean + npar.scalef
    numpar <- length(parameter) 
    r.parameter.mean <- rep(0,npar.mean) 
    r.parameter.mean <- parameter[1:npar.mean] 
-   r.parameter.variance <- rep(0,npar.variance) 
+   r.parameter.scalef <- rep(0,npar.scalef) 
    wks <- npar.mean + 1
-   r.parameter.variance <- parameter[wks:npar] 
+   r.parameter.scalef <- parameter[wks:npar] 
    probabilities <- rep(list(0),nobs)
 
-# log link function for mean
-   vlp.mean <- covariates.matrix.mean%*%r.parameter.mean + offset.mean
-# log-linear function for variance 
-   vlp.variance <- covariates.matrix.variance%*%r.parameter.variance + 
-                  offset.variance
-   if (scale.factor.model=='yes') { vlp.variance <- vlp.variance + vlp.mean } 
-   vlp.mean     <- exp(vlp.mean) 
-   vlp.variance <- exp(vlp.variance) 
+# link function for mean
+   lp.mean <- covariates.matrix.mean%*%r.parameter.mean + offset.mean
+# log-linear function for scale-factor
+   lp.scalef <- covariates.matrix.scalef%*%r.parameter.scalef + offset.scalef 
+   lp.mean     <- attr(link, which="mean")$linkinv(lp.mean)
+   lp.scalef <- exp(lp.scalef)
 
    if (is.na(fixed.b)==TRUE) {
 # extra parameter log(b) 
@@ -42,9 +40,8 @@ function(parameter,covariates.matrix.mean,
       nmax  <- vnmax[i]
       nmax1 <- nmax + 1
       vnum  <- c(0:nmax)
-      cmean <- vlp.mean[i]
-      cvariance <- vlp.variance[i]
-
+      cmean <- lp.mean[i]
+      cvariance <- lp.scalef[i]*cmean
 # iteration on c
      cmean.b <- cmean+b
      exp.aa  <- cmean.b/b 
@@ -67,16 +64,14 @@ function(parameter,covariates.matrix.mean,
                              } # end of while
 # c <= 1 solution indicated
       c1 <- (x/aa+1)/2 
+      names(c1) <- "c"
 # rounding c1 to 10 digits  
       c1 <- round(c1,digits=10) 
       if (c1==0) { a1 <- cmean }
       if (c1==1) { a1 <- log(1+cmean/b) }
       if ((c1!=0) & (c1!=1)) { onemc <- 1-c1
-          loga1 <- onemc*logb + log(((cmean+b)/b)^onemc-1) - log(onemc)
-          if (is.infinite(loga1)==TRUE) { loga1 <- 1.e+308 }
-# log(1.e+308) is the last value that returns a number, log(1.e+309) returns Inf                                               
+          loga1 <- onemc*logb + log(((cmean+b)/b)^onemc-1) - log(onemc)                                    
           a1 <- exp(loga1)
-#         a1 <- ((cmean+b)^(onemc) - b^(onemc))/onemc
           logva <- rep(loga1,nmax1)
           va <- rep(a1,nmax1)
           vb <- rep(b,nmax1)
@@ -90,7 +85,7 @@ function(parameter,covariates.matrix.mean,
               if ((is.finite(vlambda[j])==FALSE) | (vlambda[j]>lambda.limit)) { 
                                      vlambda[j] <- lambda.limit  
                                    } else { vlambda[j] <- vlambda[j] } )
-                            } # end if ((c1^=0) & (c1^=1))
+                            } # end if ((c1!=0) & (c1!=1))
       out.va[i] <- a1
       out.vc[i] <- c1
 # if c1=0 using Poisson function for probabilities
@@ -104,6 +99,6 @@ function(parameter,covariates.matrix.mean,
           } else { probability <- rep(0,nmax1) } # end of if (((exp.aa-1)...
 
       probabilities[[i]] <- probability } # end of for loop 
-   output <- list(model='general',estimates=parameter,probabilities=probabilities,
+   output <- list(model.name="general",estimates=parameter,probabilities=probabilities,
                   FDparameters=data.frame(out.va,out.vb,out.vc))
    return(output)              }

@@ -2,7 +2,7 @@ Faddyprob.limiting <-
 function(parameter,nmax) { 
    nmax1 <- nmax + 1
    vlambda <- rep(0,nmax1) 
-# if parameter[1] is Inf (infinity) na's are produced in all elements of vlambda 
+# if parameter[1] is Inf (infinity) na"s are produced in all elements of vlambda 
 # except the first
    if (is.na(parameter[1])==TRUE) { parameter[1] <- Inf }
    if (is.infinite(parameter[1])==TRUE) { probability <- rep(0,nmax1) 

@@ -1,0 +1,909 @@
+%\VignetteIndexEntry{Using CountsEPPM}
+%\VignetteEngine{R.rsp::tex}
+%\VignetteKeyword{R}
+%\VignetteKeyword{package}
+%\VignetteKeyword{CountsEPPM}
+
+\documentclass[nojss]{jss}
+\usepackage{thumbpdf,lmodern}
+\usepackage{graphicx}
+\usepackage{makeidx}
+\pagestyle{headings}
+
+%% Set PDF 1.5 and compression, including object compression
+%% Needed for MiKTeX -- most other distributions default to this
+\ifx\pdfoutput\undefined
+\else
+  \ifx\pdfoutput\relax
+  \else
+    \ifnum\pdfoutput>0
+      % PDF output
+      \pdfminorversion=5
+      \pdfcompresslevel=9
+      \pdfobjcompresslevel=2
+    \fi
+  \fi
+\fi
+
+\makeatletter
+\renewcommand\@pnumwidth{2.05em} % over 1000 pages
+\makeatother
+
+\makeindex
+\sloppy{}
+
+\def\bm{\boldmath}
+
+\graphicspath{{Figures/}}
+
+\author{
+  David M. Smith\\IBM Watson Health \And
+  Malcolm J. Faddy\\Queensland University of Technology
+}
+\Plainauthor{David M. Smith, Malcolm J. Faddy}
+
+\title{Mean and Scale-Factor Modeling of Under- and Overdispersed Count Data}
+
+\Abstract{
+  This vignette describes an updated version of the \proglang{R} package 
+  \pkg{CountsEPPM} and its use in determining maximum likelihood
+  estimates of the parameters of extended Poisson process models. 
+  These provide a Poisson process based family of
+  flexible models that can handle both underdispersion and overdispersion in
+  observed count data, with the negative binomial and Poisson distributions
+  being special cases. Within \pkg{CountsEPPM} models with mean and scale-factor
+  related to covariates are constructed to match a generalized linear model
+  formulation. Use of the package is illustrated by application to several
+  published datasets.
+}
+
+\Keywords{Poisson distribution, underdispersion, overdispersion, negative binomial distribution, extended Poisson process models}
+
+\Address{
+  David M. Smith\\
+  IBM Watson Health \\
+  75 Binney Street \\
+  Cambridge, MA 02142-1123, United States of America\\
+  E-mail: \email{smithdm1@us.ibm.com} \\
+  
+  Malcolm J. Faddy\\
+  School of Mathematical Sciences\\
+  Queensland University of Technology\\
+  G.P.O. Box 2434\\
+  Brisbane Qld 4001, Australia\\
+  E-mail: \email{m.faddy@qut.edu.au}
+}
+
+\begin{document}
+%
+\section{Introduction}
+
+This vignette, which relates to version 3.0 of \pkg{CountsEPPM}, is a revised and added-to version of \cite{SmithFaddy2016} which related to version 2.1. The important differences between previous versions and 3.0 are a focus on mean and scale-factor models with variance models dropped,  the addition of generic (S3) methods, using only \code{optim} for optimization i.e., no use of \code{nlm}, and offsets included in the formulae. Readers should refer to \cite{SmithFaddy2016} for details of the actual modelling which involves Markov birth processes.
+
+The models using extended Poisson process models (EPPMs) were originally developed in \cite{Faddy1997}, where the construction of discrete probability distributions having very general dispersion properties was described. The Poisson and negative binomial distributions are special cases of this modeling which includes both underdispersion and overdispersion relative to the Poisson, with the negative binomial having the most extreme level of overdispersion within the EPPM family. \cite{FaddySmith2008} incorporated covariate dependence in the mean via a reparameterization using an approximate form of the mean; \cite{FaddySmith2011} extended this to incorporate covariate dependence in the dispersion, this being achieved by a reparameterization using an approximate form of the variance. The supplementary material for \cite{FaddySmith2011} contained \proglang{R} code illustrating fitting these models. This \proglang{R} code has been extended and generalized to have inputs and outputs more akin to those of a generalized linear model (GLM) as in the \proglang{R} function \code{glm} and the \proglang{R} function \code{betareg} (\citealp{betareg2010}, \citealp{extbetareg2012}).  Both \cite{Hilbe2011} and \cite{Hilbe2014} have commented about a software package for EPPMs being developed in the \proglang{R} system (\citealp{manual2016}); the package \pkg{CountsEPPM} \cite{CountsEPPM} whose use is described in this vignette is that software. 
+
+\section{Description of the functions}
+
+The main function of the package, also named \code{CountsEPPM}, is focused on models with two covariate dependences linked to the mean and scale-factor. The input into the function is a formula involving a single response variable and one or two formulae related to the mean and scale-factor models. Although the input formula involves a single response variable, the actual model fitting has a  list of frequency distributions \code{list.counts} in place of the  response variable, which is either input or constructed from the input data according to whether a \code{list} or a \code{data.frame} is input. For all models the GLM link function between the response variable (mean, scale-factor) and linear predictor of covariates is log; the log of parameter $b$ of Equation~2 of \cite{SmithFaddy2016} is also used but the parameter $c$ of Equation~2 of \cite{SmithFaddy2016} is untransformed. The full three parameter version of Equation~2 of \cite{SmithFaddy2016} has been labeled the Faddy distribution as in \cite{Grunwaldetal2011}. Because of possible issues with the parameter $b$, variants of the models where $b$ is fixed have been included in the lists of models. This enables profile log-likelihoods to be produced for this parameter.
+
+\cite{Nash2014} is a recent reference on optimization using \proglang{R} functions and contains information on, and insights into, the methods used. All models are fitted to the data using maximum likelihood, the optimization method used being the \proglang{R} function \code{optim} (options used being the simplex method of \cite{NelderMead1967} or \code{BFGS} using numerical derivatives). A facility to change options for \code{optim} through use of the argument \code{control} is included. The elements of this argument are the options for \code{optim} as described in \cite{manual2016}. The default values set within \code{CountsEPPM} are \code{fnscale = -1}, \code{trace = 0}, \code{maxit = 1000} for \code{optim}. Although for most data sets the two options of \code{optim} give similar results in terms of log-likelihood and parameter estimates, etc., some results may be a little different depending on particular features of the data set. The simplex method, is robust to discontinuities in the log-likelihood surface. However, it is slow to converge. In contrast the function \code{BFGS} makes use of derivatives, in this case numerical derivatives, resulting in faster convergence, but there is a reliance on the log-likelihood surface being smooth i.e., no sudden changes in derivative values. Only \code{BFGS} makes use of derivatives in the actual model fitting, but both options calculate a hessian matrix from the derivatives to produce standard errors for the parameter estimates. The calculation of the numerical derivatives and hessians use the functions \code{grad} and \code{hessian} from the package \pkg{numDeriv} \citep{numDeriv}. The derivatives are more accurately calculated using \pkg{numDeriv} \citep{numDeriv} than using alternative central difference approximations, resulting in better model fitting and better conditioned hessians. However, as stated in \citet[p.~131]{Nash2014}, a longer time is taken. The occurrence of \code{NA} in the vector of standard errors is an indication of problems with the model fitting, possibly caused by an inappropriate model. This is particularly so when all estimates of parameter standard errors are \code{NA}, which results when the hessian matrix can not be be inverted due to its determinant being zero or it being otherwise ill-conditioned. Having derivatives available means that they can be reviewed, together with the hessian, at the conclusion of parameter estimation to evaluate whether maximum likelihood estimates have been attained.
+
+The code for the main analysis function is
+\begin{Code}
+CountsEPPM(formula, data, subset = NULL, na.action = NULL, weights = NULL,
+  model.type = "mean and scale-factor", model.name = "general", link = "log",
+  initial = NULL, ltvalue = NA, utvalue = NA, method = "Nelder-Mead",
+  control = NULL, fixed.b=NA)
+\end{Code}
+with details of the arguments given in Table \ref{Table:one} together with defaults if any.
+
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+Argument & Description & Default \\
+\hline
+\code{formula} &  a single response variable \& paired & \\
+                       &  formulae \cite{Formula2010} & \\
+\hline
+\code{data} & \code{data.frame} or \code{list} & \\
+\hline
+\code{subset} & subsetting commands &  NULL \\
+\hline
+\code{na.action} & action taken for NAs in data & NULL \\
+\hline
+\code{weights} & vector if \code{data} is a \code{data.frame} & vector of ones \\
+                       & a \code{list} if \code{data} is a \code{list} & list of lists of ones \\
+                       & attributes \code{normalization}, \code{norm.to.n} & both NULL \\
+\hline
+\code{model.type} & \code{"mean only"} & \code{"mean and scale-factor"} \\
+                   & \code{"mean and scale-factor"} & \\
+\hline
+\multicolumn{3}{|l|}{\it if \code{model.type = "mean only"} (only $a$ in Equation~2 of \cite{SmithFaddy2016} modeled)} \\
+\hline
+\code{model.name} & \code{"Poisson"} & \\
+           & \code{"negative binomial"} & \\
+           & \code{"negative binomial fixed b"} & \\
+           & \code{"Faddy distribution"} Equation ~2 & \\ 
+           &  of \cite{SmithFaddy2016} & \\
+           & \code{"Faddy distribution fixed b"} & \\
+\hline
+\multicolumn{3}{|l|}{\it if \code{model.type = "mean and scale-factor"}  (both modeled)} \\
+\hline
+\code{model.name}  & \code{"general"} as Equations~3 and~4 &  \code{"general"} \\
+  & \code{"general fixed b"} & \\
+& \code{"limiting"} as Equations ~9 and~10 & \\ 
+           &  of \cite{SmithFaddy2016} & \\
+\hline 
+\code{link} & the glm link function for mean count & \code{"log"} \\
+                 & only log allowed & \\
+\hline
+\code{initial} & vector of initial values for parameters, & Poisson \code{glm} output \\
+                            & means first followed by the variances & augmented by 0's \\
+                            & and/or parameters $c$, $\log(b)$ & for other parameters  \\
+\hline
+\code{ltvalue} & lower truncation value (excluded) &  \code{NA} \\
+\hline
+\code{utvalue} & upper truncation value (excluded) &  \code{NA} \\
+\hline
+\code{method} & \code{"Nelder-Mead"} &  \code{"Nelder-Mead"} \\
+                       & \code{"BFGS"} attribute \code{"grad.method"} & attribute \code{"simple"} \\
+                       & which is \code{"simple"} or \code{"Richardson"} & \\
+\hline
+\code{control} & list of control parameters \code{optim} &  see text for more details \\
+\hline
+\code{fixed.b} & value $b$ is fixed at &  \code{NA} \\
+\hline
+\end{tabular}
+\caption{Arguments of  \code{CountsEPPM}.} \ \label{Table:one}
+\end{table}
+
+As in earlier versions, \code{data} can be either a \code{list} or a \code{data.frame}. The response variable in \code{formula} is a vector if a \code{data.frame} is input or a \code{list} if a \code{list} is input. The response variables  \code{mean.obs} and \code{variance.obs} are constructed within \code{CountsEPPM} prior to being used to fit models. The \proglang{R} package \pkg{Formula} of \cite{Formula2010} is used to extract model information from the \code{formula} input to \code{CountsEPPM}. To avoid repeated extractions within subordinate functions, the extraction of model information used in the model fitting, such as \code{covariates.matrix.mean}, is only done once within \code{CountsEPPM}. In version 3.0 a set of S3 generic extractor functions for objects of class \code{"CountsEPPM"} has been added. The set is the same as that for \pkg{BinaryEPPM}  (\citealp{BinaryEPPM}) which is itself similar to that of Table 1 of  \code{betareg} (\citealp{betareg2010}).
+
+As iteration is involved in the model fitting, initial estimates of the parameters are needed. These can optionally be provided in the vector \code{initial}. Within \code{CountsEPPM}, if \code{initial} is unset,  a Poisson model is fitted using \code{glm} and the estimates from that fit are used to provide estimates for the parameters of the mean linear predictor. If the scale-factor is also being modeled the initial estimates of the parameters of the scale-factor linear predictor are set to 1.0 recognising that for the Poisson distribution the variance equals the mean. The initial value of $\log(b)$ of Equation~2 of \cite{SmithFaddy2016} is set to zero. The matrix exponential function used  for calculating the probabilities of Equation~1 of \cite{SmithFaddy2016} is that of the package \pkg{expm} of \cite{expm} which depends on the package \pkg{Matrix} of \cite{Matrix}.  \code{CountsEPPM} returns an object of class \code{"CountsEPPM"} summarizing the model fit, the components of which are given in Table~\ref{Table:two}.
+
+Table~\ref{Table:three} gives details of a set of S3 generic extractor functions for objects of class \code{"CountsEPPM"}. The set is similar to that of Table 1 of \cite{betareg2010} related to package \pkg{betareg}, except there are no functions \code{estfun}, \code{bread} or \code{linear.hypothesis}. Also, \code{gleverage} and \code{cooks.distance} are variants of the functions \code{glm.diag} and \code{glm.diag.plots} from package \pkg{boot} \cite{boot} rather than \pkg{betareg}. The first four blocks refer to functions specific to \pkg{CountsEPPM}. The last block contains generic functions, the default versions of which work because of the information supplied by the functions of the first four blocks. Package \pkg{lmtest} \cite{ZeileisHothorn02} needs to be loaded to use \code{coeftest} and \code{lrtest}. Function \code{AIC} comes from \pkg{stats} which is a default package loaded when \proglang{R} is started. In Table~\ref{Table:two} both \code{n} and \code{nobs} are included, so that functions from both packages \pkg{lmtest} and \pkg{stats} can use the object returned.
+
+As the vectors of frequency distributions are only required to be of length the maximum observed count value $+ 1$, this is how they are set up. However, the fitted models can have probability masses at counts greater than these maximum counts. A component of the output object from \code{CountsEPPM} i.e., \code{\$vnmax} is a vector of the maximum observed counts. If probabilities for counts greater than these maximums are wanted, the values in \code{output.fn\$vnmax} can be increased in value and \code{predict} with \code{type="distribution"} run to obtain these probabilities.
+\newpage
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|p{9cm}|}
+\hline
+{Component} & {Description}  \\
+\hline
+\code{data.type} & \code{"data.frame"} or \code{"list"} \\
+\hline
+\code{list.data} & data as a \code{"list"} of frequency distributions \\
+\hline
+\code{call} & the call to \pkg{CountsEPPM} \\
+\hline
+\code{formula} & the \code{formula} input \\
+\hline
+ \code{model.type} & \code{"mean only"} or \code{"mean and scale-factor"} \\
+\hline
+\code{model.name} & \code{"Poisson"}, \code{"negative binomial"}, \code{"negative binomial fixed b"}, 
+           \code{"Faddy distribution"} (Equation~2), \code{"Faddy distribution fixed b"}, 
+           \code{"general"} (Equations~3 \&~4), \code{"general fixed b"},
+           \code{"limiting"} (Equations~9 \&~10). \\
+           & Equation numbers of \cite{SmithFaddy2016} \\ 
+\hline
+\code{link} & the glm link function for mean count \\
+\hline
+ \code{covariates.matrix.mean} & matrix of covariates for the mean \\
+\hline
+ \code{covariates.matrix.scalef} &  matrix of covariates for the scale-factor \\
+\hline
+ \code{offset.mean} & offset vector for the mean \\
+\hline
+ \code{offset.scalef} & offset vector for the scale-factor \\
+\hline
+\code{coefficients} & the estimated coefficients \\
+\hline
+\code{loglik} & the final log-likelihood value \\
+\hline
+\code{vcov} & the estimated variance/covariance matrix \\
+\hline
+\code{n} needed for \code{lmtest} & the number of observations \\
+\hline
+\code{nobs} needed for \code{stats}  & the number of observations \\
+\hline
+\code{df.null} & null model degrees of freedom \\
+\hline
+\code{df.residual} &  residual degrees of freedom \\
+\hline
+\code{ltvalue} & lower truncation value (excluded) \\
+\hline
+\code{utvalue} & upper truncation value (excluded) \\
+\hline
+\code{fixed.b} & value $b$ is fixed at \\
+\hline
+\code{vnmax} & a vector of maximum counts in each of \\
+                     & the grouped data vectors \\
+\hline
+\code{weights} & a vector or list of weights \\
+\hline
+\code{converged} & whether converged \\
+\hline
+\code{iterations} & number of iterations \\
+\hline
+\code{method} & \code{"Nelder-Mead"} or \code{"BFGS"} \\
+\hline
+\code{start} & initial estimates input \\
+\hline
+\code{optim} & final estimates of coefficients \\
+\hline
+\code{control} & control parameters of \code{optim} \\
+\hline
+\code{fitted.values} & fitted values of mean count \\
+\hline
+\code{y} & observed values of mean count \\
+\hline
+\code{terms} &  model terms \\
+\hline
+\end{tabular}
+\caption{Components of object returned by \code{CountsEPPM}.}\label{Table:two}
+\end{table}
+\newpage
+\begin{table}[ht!]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\multicolumn{1}{|c|}{Function} & \multicolumn{1}{|c|}{Description} \\
+\hline
+\code{print()} & a simple printed display \\
+\code{summary()}  & standard regression output (coefficient estimates, standard \\
+  & errors, partial Wald tests); returns an object of class \\
+  & \code{summary.BinaryEPPM} containing the relevant summary \\
+  & statistics (which has a \code{print} method) \\
+\hline
+\code{coef()} & extract coefficients of model (full, mean, or precision \\
+  & components), a single vector of all coefficients by default \\
+\code{vcov()}  &  associated covariance matrix (with matching names)  \\
+\code{predict()} & predictions (response, linear predictor $p_s$, linear \\
+  & predictor scale-factor, $p_s$, scale-factor, scale-factor limits, mean, \\
+  & variance, distribution probabilities, distribution parameters) \\
+  & for existing and new data \\
+\code{fitted()} & fitted means for observed data \\
+\code{residuals()}  & extract residuals (deviance, Pearson, response, standardized \\
+  & deviance, standardized Pearson residuals), defaulting to \\
+  & standardized Pearson residuals \\
+\hline
+\code{terms()} & extract terms of model components \\
+\code{model.matrix()} & extract model matrix of model components \\
+\code{model.frame()} & extract full original model frame \\
+\code{logLik()} & extract fitted log-likelihood \\
+\hline
+\code{plot()} & diagnostic plots of residuals, predictions, leverages, etc. \\
+\code{hatvalues()} & hat values (diagonal of hat matrix) \\
+\code{cooks.distance()} & Cook's distance \\
+\code{gleverage()} & generalized leverage \\
+\code{waldtest()} & Wald tests of model parameters \\
+\hline
+\code{coeftest()} & partial Wald tests of coefficients \\
+\code{lrtest()} & likelihood ratio tests of model parameters \\
+\code{AIC()} & compute information criteria (AIC, BIC, \dots) \\
+\hline
+\end{tabular}
+\caption{Generic Functions for Use with Objects of Class \code{CountsEPPM}. }\label{Table:three}
+\end{table}
+
+\section{Examples}
+
+The examples illustrate various ways in which \pkg{CountsEPPM} can be used to produce informatative analyses.
+For the first three examples \code{data} is a \code{list} where the dependent variable of counts is a \code{list} of vectors of frequency distributions, whereas for the last two \code{data} is a \code{data frame}. Significant time savings can be made by using the \code{list} form of input where applicable. The fitting of models and estimation of their parameters can be sensitive to the initial estimates and method of estimation chosen, with flatness of the log-likelihood surface possible, particularly with respect to the parameter $b$. It is recommended that analyses be run more than once using different initial estimates and optimization methods.
+
+\subsection{Number of young at varying effluent concentrations data}
+
+These Ceriodaphnia dubia data were used as an example by \cite{FaddySmith2011}. Ceriodaphnia dubia are water fleas used to test the impact of effluents on water quality. The data, originally from \cite{BailerOris1997}, are counts of young at varying effluent concentrations, and are in \code{list} of frequencies and variables form. The defaults for \code{model.type} of  \code{"mean and variance"}, and \code{model} of \code{"general"}, are used. The code given below is for a run using the \code{method="simplex"} option of \code{optim} followed by one using \code{BFGS} with \code{attribute="Richardson"} with this last run giving derivatives (gradients) at the final estimates. Although during these runs the estimate of $\log(b)$ changed sign, its standard error is relatively large and the estimates of the other parameters had relatively small changes in value.
+
+\begin{Sinput} 
+R> data("ceriodaphnia.group")
+R> output.fn <- 
++   CountsEPPM(number.young ~ 1 + vdose + vdose2 | 1 + vdose + vdose2,
++   data = ceriodaphnia.group, control = list(maxit = 4000, reltol = 1.e-11))
+R> names(output.fn$optim$par) <- c('mean Intercept', 'mean dose',
++   'mean dose^2', 'scale-factor Intercept', 'scale-factor dose',
++   'scale-factor dose^2', 'log(b)')
+R> method <- "BFGS"
+R> attr(method, which = "grad.method") <- "Richardson"
+R> output.fn <- update(output.fn, initial = output.fn$optim$par,
++   method = method) 
+R> summary(output.fn)
+\end{Sinput}
+\begin{Soutput} 
+ Dependent variable is a list of frequency distributions for counts 
+
+Call:
+CountsEPPM(formula = number.young ~ 1 + vdose + vdose2 | 1 + vdose + 
+    vdose2, data = ceriodaphnia.group, initial = output.fn$optim$par, 
+    method = method, control = list(maxit = 4000, reltol = 1e-11))
+
+Model type        : mean and scale-factor 
+Model name        : general 
+Link scale-factor : log 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+                 Estimate Std. Error t value  Pr(>|t|)    
+mean Intercept  3.1406671  0.0859089 36.5581 < 2.2e-16 ***
+mean dose       0.1733786  0.0302852  5.7249 9.177e-07 ***
+mean dose^2    -0.0196106  0.0025092 -7.8155 8.666e-10 ***
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+                        Estimate Std. Error t value Pr(>|t|)   
+scale-factor Intercept  1.297770   0.445457  2.9133 0.005653 **
+scale-factor dose      -0.665782   0.219006 -3.0400 0.004017 **
+scale-factor dose^2     0.047337   0.015775  3.0008 0.004469 **
+log(b)                 -0.144932   2.625530 -0.0552 0.956234   
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -152.1356 on 7 Df
+ Number of iterations: 67 of optim method BFGS gradient method Richardson 
+
+ final gradients of parameters 
+[1] 0.0020328358 0.0086772311 0.0392932715 0.0001186455 0.0005086497
+[6] 0.0103859013 0.0019768983
+
+ return code 0 successful 
+\end{Soutput}
+The above parameter estimates agree with those in \cite{FaddySmith2011} to two decimal places, except for $\log(b)$  which is relatively poorly estimated.
+Further details of the model can be printed out such as the parameters of the Faddy distribution as well as the predicted values of the means, variances and scale-factors. 
+\begin{Sinput} 
+R> predict(output.fn, type = "distribution.parameters")
+\end{Sinput}
+\begin{Soutput} 
+      out.va    out.vb     out.vc
+1   7.661167 0.8650815  0.5179911
+2  18.489020 0.8650815  0.1830147
+3  56.473485 0.8650815 -0.2029801
+4 414.407542 0.8650815 -0.9161889
+5   6.799275 0.8650815  0.2157040
+\end{Soutput}
+\begin{Sinput} 
+R> predictions <- data.frame(
++    mean = predict(output.fn, type = "mean"),
++    variance = predict(output.fn, type = "variance"),
++    scale.factor = predict(output.fn, type = "scale.factor"))
+R> print(predictions)
+\end{Sinput}
+\begin{Soutput} 
+       mean variance scale.factor
+1 23.119285 84.64258    3.6611244
+2 28.895726 41.96128    1.4521623
+3 32.817612 23.81793    0.7257668
+4 31.761146 11.51863    0.3626641
+5  9.428539 13.67537    1.4504229
+\end{Soutput}
+To illustrate use of the \code{newdata} argument of \code{predict} a new \code{data.frame} of the second and third rows is constructed and used with \code{predict}.
+\begin{Sinput} 
+R> newdata <- data.frame(intercept = rep(1,2), 
++   vdose = ceriodaphnia.group$vdose[2:3], 
++   vdose2 = ceriodaphnia.group$vdose2[2:3], vnmax = c(35, 44))
+R> predictions <- data.frame(
++   mean = predict(output.fn, newdata = newdata, type = "mean"), 
++   variance = predict(output.fn, newdata = newdata, type = "variance"),
++   scale.factor = predict(output.fn, newdata = newdata, 
++   type = "scale.factor"))
+R> print(predictions)
+\end{Sinput}
+\begin{Soutput} 
+      mean variance scale.factor
+1 28.89573 41.96128    1.4521623
+2 32.81761 23.81793    0.7257668
+\end{Soutput}
+
+\subsection[L\"{u}ning et al. data]{L\"{u}ning et al.~data}
+
+These data are from \cite{Luning1966} and are in the form of a \code{list} of frequencies and variables. The number of trials are stated in \cite{Luning1966} to be both lower and upper truncated at 4 and 11 respectively, so the data are for counts of 5 to 10. Default initial values are used for fitting the default \code{general} model of Equations~3 and~4 of \cite{SmithFaddy2016}.
+
+\begin{Sinput}
+R> data("Luningetal.litters")
+R> output.fn <- CountsEPPM(number.trials ~ 0 + fdose | 0 + fdose, 
++   Luningetal.litters, ltvalue = 4, utvalue = 11,
++   control = list(maxit = 2000))
+R> summary(output.fn)
+\end{Sinput}
+\begin{Soutput} 
+ Dependent variable is a list of frequency distributions for counts 
+
+ distribution truncated below at  4
+ distribution truncated above at  11 
+
+Call:
+CountsEPPM(formula = number.trials ~ 0 + fdose | 0 + fdose,
+    data = Luningetal.litters, ltvalue = 4, utvalue = 11,
+    control = list(maxit = 2000))
+
+Model type        : mean and scale-factor 
+Model name        : general 
+Link scale-factor : log 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+          Estimate Std. Error t value  Pr(>|t|)    
+fdose0   1.9171890  0.0022050 869.471 < 2.2e-16 ***
+fdose300 1.8321149  0.0099383 184.350 < 2.2e-16 ***
+fdose600 1.7239822  0.0186856  92.262 < 2.2e-16 ***
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+          Estimate Std. Error  t value  Pr(>|t|)    
+fdose0   -1.446450   0.074170 -19.5018 < 2.2e-16 ***
+fdose300 -1.365485   0.092402 -14.7777 < 2.2e-16 ***
+fdose600 -1.209275   0.138516  -8.7302 < 2.2e-16 ***
+log(b)   19.395048         NA       NA        NA    
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -2653.815 on 7 Df
+ Number of iterations: 1068 of optim method Nelder-Mead 
+
+ return code 0 successful 
+Warning message:
+In sqrt(diag(se)) : NaNs produced
+\end{Soutput}
+The warning message \code{In sqrt(diag(varcov)) : NaNs produced} and the value of $b=\exp(19.395048)$ being large suggests that the fitted model corresponds to a negative expeonential sequence of rate parameters in the underlying birth process (Equations~9 and~10 of \cite{SmithFaddy2016}). 
+\begin{Sinput} 
+R> output.fn <- update(output.fn, model.name = 'limiting')
+R> summary(output.fn)
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable is a list of frequency distributions for counts 
+
+ distribution truncated below at  4
+ distribution truncated above at  11 
+
+Call:
+CountsEPPM(formula = number.trials ~ 0 + fdose | 0 + fdose,
+    data = Luningetal.litters, model.name = "limiting",
+    ltvalue = 4, utvalue = 11, control = list(maxit = 2000))
+
+Model type        : mean and scale-factor 
+Model name        : limiting 
+Link scale-factor : log 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+          Estimate Std. Error t value  Pr(>|t|)    
+fdose0   1.9169670  0.0077381 247.730 < 2.2e-16 ***
+fdose300 1.8320442  0.0099421 184.271 < 2.2e-16 ***
+fdose600 1.7242914  0.0186506  92.453 < 2.2e-16 ***
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+          Estimate Std. Error  t value  Pr(>|t|)    
+fdose0   -1.444080   0.074503 -19.3828 < 2.2e-16 ***
+fdose300 -1.366303   0.092760 -14.7294 < 2.2e-16 ***
+fdose600 -1.210711   0.138765  -8.7249 < 2.2e-16 ***
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -2653.816 on 6 Df
+ Number of iterations: 533 of optim method Nelder-Mead 
+
+ return code 0 successful 
+\end{Soutput}
+The parameters of the limiting model can be printed out
+\begin{Sinput} 
+R> predict(output.fn, type = "distribution.parameters")
+\end{Sinput}
+\begin{Soutput} 
+  out.valpha  out.vbeta
+1   22.99626 -0.3067979
+2   18.91508 -0.3070639
+3   13.95311 -0.2872457
+\end{Soutput}
+showing much the same results as the previous fit of the \code{general} model. To further explore the appropriateness of the limiting model a profile likelihood was constructed for a range of values of parameter $b$ from the version of the \code{general fixed b} model of Equations~3 and~4 of \cite{SmithFaddy2016} with a plot of the resulting $\log(\rm likelihoods)$ against $\log(\rm b)$ being produced.
+%
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.62\textwidth, trim=0 10 0 50, clip]{vignette_FigureOne.jpg}
+\caption{log-likelihood for fixed values of parameter $\log(\rm b)$.} \label{figure:one}
+\end{figure}
+%
+In Figure~\ref{figure:one} there is a clear trending of the log-likelihood values toward the value of the limiting model. The code used to produce  Figure~\ref{figure:one} follows.
+\begin{Sinput} 
+R> vfixed.b <- c(0:19)
+R> vloglikelihood <- rep(0, 20)
+R> vloglikelihood <- sapply(1:20, function(i) {
+R>  if (i == 1) {
+R>    output.fn <- CountsEPPM(number.trials ~ 0 + fdose | 0 + fdose,
++        Luningetal.litters, model.name = 'general fixed b',
++        ltvalue = 4, utvalue = 11, fixed.b = exp(vfixed.b[i]))
+R>  } else {
+R>    output.fn <- CountsEPPM(number.trials ~ 0 + fdose | 0 + fdose,
++        Luningetal.litters, model.name = 'general fixed b',
++        ltvalue = 4, utvalue = 11, initial = output.fn$optim$par,
++        fixed.b = exp(vfixed.b[i]))
+R>         } # end of if (i==1) 
+R>  vloglikelihood[i] <- output.fn$loglik } ) 
+
+R> plot(vfixed.b, vloglikelihood, xlim = c(0, 25), ylim =c (-2658, -2653),
++     main = "Profile likelihood for log(b) Luning litters data",
++     xlab = "log(b)", ylab = "log(likelihood)")
+R> points(20, lm.loglik, pch = 16)
+R> text(20.1, lm.loglik, "limiting model", pos = 4, offset = 0.5, cex = 0.7)
+\end{Sinput}
+
+\subsection{Number of attempts at feeding of herons}
+
+These data are originally from \cite{ZhuEickhoffKaiser2003} and are in the form of a \code{list} of frequencies and variables. \cite{FaddySmith2005} described an alternative modeling approach to that of \cite{ZhuEickhoffKaiser2003} constructing a bivariate EPPM for both count (number of attempts) and grouped (number of successful attempts) data. Here a univariate EPPM for the numbers of trials (attempts at foraging) of 20 adult and 20 immature green-backed herons is considered. The first model fitted was a negative binomial using the default initial values.
+
+\begin{Sinput}
+R> data("herons.group")
+R> output.fn.one  <- CountsEPPM(number.attempts ~ 0 + group, herons.group,
++     model.type = 'mean only', model.name = 'negative binomial')
+R> names(output.fn.one$optim$par) <- c('Adult mean',
++     'Immature mean', 'log(b)')
+R> print(summary(output.fn.one))
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable is a list of frequency distributions for counts 
+
+Call:
+CountsEPPM(formula = number.attempts ~ 0 + group, data = herons.group, 
+    model.type = "mean only", model.name = "negative binomial")
+
+Model type        : mean only 
+Model name        : negative binomial 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+               Estimate Std. Error t value  Pr(>|t|)    
+group Adult     0.56230    0.15500  3.6279 0.0008573 ***
+group Immature  0.47586    0.16439  2.8947 0.0063315 ** 
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+       Estimate Std. Error t value Pr(>|t|)  
+log(b)  0.50825    0.26793   1.897  0.06566 .
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -120.2042 on 3 Df
+ Number of iterations: 108 of optim method Nelder-Mead 
+
+ return code 0 successful 
+\end{Soutput}
+The second model fitted was a more general Faddy distribution again using the default initial values.
+\begin{Sinput}
+R> output.fn.two <- update(output.fn.one, model.name = 'Faddy distribution') 
+R> names(output.fn.two$optim$par) <- c('Adult mean', 'Immature mean',
++     'c', 'log(b)')
+R> print(summary(output.fn.two))
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable is a list of frequency distributions for counts 
+
+Call:
+CountsEPPM(formula = number.attempts ~ 0 + group, data = herons.group, 
+    model.type = "mean only", model.name = "Faddy distribution")
+
+Model type        : mean only 
+Model name        : Faddy distribution 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+               Estimate Std. Error t value  Pr(>|t|)    
+group Adult     0.56282    0.15496  3.6320 0.0008688 ***
+group Immature  0.47652    0.16436  2.8993 0.0063351 ** 
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+         Estimate Std. Error    t value Pr(>|t|)    
+c      1.0000e+00 1.5724e-05 63596.0001   <2e-16 ***
+log(b) 5.0703e-01 2.6792e-01     1.8924   0.0665 .  
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -120.2042 on 4 Df
+ Number of iterations: 331 of optim method Nelder-Mead 
+
+ return code 0 successful 
+\end{Soutput}
+The estimate of the parameter $c$ here is essentially one, the upper limit of permitted values of this parameter corresponding to a negative binomial model, and its standard error is largely noise; Wald and (log-)likelihood tests on this parameter are therefore invalid.
+%
+Print outs of the parameters of the Faddy distribution and the associated distribution for the first group can be produced.
+\begin{Sinput}
+R> predict(output.fn.two, type = "distribution.parameters")
+R> predict(output.fn.two, type = "distribution")[1]
+\end{Sinput}
+\begin{Soutput}
+    out.va  out.vb    out.vc
+1 1.755613 1.66035 0.9999997
+2 1.610463 1.66035 0.9999997
+
+[[1]]
+ [1] 0.054207702 0.074451022 0.081919897 0.082680037 0.079683626 0.074619482
+ [7] 0.068518504 0.062025215 0.055542261 0.049315532 0.043487554 0.038132360
+[13] 0.033278821 0.028926520 0.025056608 0.021639253 0.018638723 0.016016821
+[19] 0.013735148 0.011756573 0.010046116 0.008571446 0.007303109 0.006214567
+[25] 0.005282124
+\end{Soutput}
+%
+By increasing the maximum values for the grouped counts using the following code, the probabilities for the next ten counts in the sequence for the first group can be obtained.
+\begin{Sinput}
+R> wks <- output.fn.two$vnmax [1] + 2
+R> wke <- output.fn.two$vnmax[1] + 11
+R> output.fn.two$vnmax[1] <- output.fn.two$vnmax[1] + 10
+R>   predict(output.fn.two, type = "distribution")[[1]][wks:wke]
+\end{Sinput}
+\begin{Soutput}
+[[1]]
+ [1] 0.0044847776 0.0038040231 0.0032236418 0.0027294804 0.0023092342
+ [6] 0.0019522416 0.0016492910 0.0013924445 0.0011748767 0.0009907317
+\end{Soutput}
+%
+A weighted analysis using the reciprocal of the predicted variances can be performed.
+\begin{Sinput}
+R> herons.group$weights <- herons.group$number.attempts
+R> weights <- 1 / predict(output.fn.one, type = "variance")
+R> herons.group$weights <- lapply(1:length(herons.group$weights), function(i) {
++   herons.group$weights[[i]] <- rep(weights[i],
++   length(herons.group$weights[[i]])) } ) # end of lapply
+R> attr(herons.group$weights, which = "normalize") <- TRUE
+R> output.fn  <- CountsEPPM(number.attempts ~ 0 + group, herons.group, 
++   model.type = 'mean only', model.name = 'Poisson',
++   weights = herons.group$weights) 
+R> names(output.fn$optim$par) <- c('Adult mean', 'Immature mean') 
+R> summary(output.fn)
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable is a list of frequency distributions for counts 
+
+Call:
+CountsEPPM(formula = number.attempts ~ 0 + group, data = herons.group, 
+    weights = herons.group$weights, model.type = "mean only",
+    model.name = "Poisson")
+
+Model type        : mean only 
+Model name        : Poisson 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+               Estimate Std. Error t value  Pr(>|t|)    
+group Adult    2.073172   0.086557  23.951 < 2.2e-16 ***
+group Immature 1.894617   0.080490  23.538 < 2.2e-16 ***
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Maximum weighted likelihood regression.
+ List of weights used. 
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -168.3474 on 2 Df
+ Number of iterations: 45 of optim method Nelder-Mead 
+
+ return code 0 successful 
+\end{Soutput}
+
+The same data as \code{herons.group}, but in \code{data.frame} form, has been included in the package as \code{herons.case}. Running the same code with \code{herons.group} replaced by \code{herons.case} will produce essentially the same outputs.
+
+\subsection{Titanic survivors}
+
+To illustrate the inclusion of offsets, data of passenger survival from the 1912 sinking of the Titanic are used. The data are in data frame form as given in Table 9.37 of \cite{Hilbe2011} i.e., the numbers surviving out of the number of cases (passengers) within different age, sex, and class categories. The individual data for all 1316 passengers is available from package \pkg{msme} \cite{msme}. \citet[p.~265--268]{Hilbe2011} analyzes the numbers surviving as count data with an offset of the $\log$ of the number of cases for the mean, and fits a negative binomial with variance function $  v = m~+~\alpha m^2$ which equates to the variance function of Equation~4 of \cite{SmithFaddy2016} with $\alpha~=~\frac{1}{b}$.  Both mean and scale-factor need to be offset by the $\log$ of the number of cases. A series of models was fitted: a negative binomial with the parameter $b$ fixed at the value from \cite{Hilbe2011} of $b=9.615385$;  a negative binomial with $b$ unspecified; a more general Faddy distribution; and a general mean and constant scale-factor model. The last of these models was found to have the largest log-likelihood. Details of it and its fitting follow.
+
+\begin{Sinput}
+R> data("Titanic.survivors.case")
+R> lncases <- log(Titanic.survivors.case$cases)
+R> output.fn <- CountsEPPM(survive ~ age + sex + class + offset(lncases) |
++   1 + offset(lncases), Titanic.survivors.case, control = list(maxit = 2000))
+R> names(output.fn$optim$par) <- c('Intercept mean', 'age adult', 'sex male',
++   'class 2nd class', 'class 3rd class', 'Intercept scale', 'log(b)')
+R> output.fn <- update(output.fn, initial = output.fn$optim$par,
++    method = 'BFGS')
+R> summary(output.fn)
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable a vector of counts. 
+
+Call:
+CountsEPPM(formula = survive ~ age + sex + class + offset(lncases) | 
+    1 + offset(lncases), data = Titanic.survivors.case, 
+    initial = output.fn$optim$par, method = "BFGS",
+    control = list(maxit = 2000))
+
+Model type        : mean and scale-factor 
+Model name        : general 
+Link scale-factor : log 
+non zero offsets in linear predictors 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+                 Estimate Std. Error t value Pr(>|t|)   
+Intercept mean   0.047471   0.083542  0.5682 0.594447   
+age adult       -0.043300   0.133024 -0.3255 0.757981   
+sex male        -0.177376   0.129474 -1.3700 0.229012   
+class 2nd class -0.031658   0.113242 -0.2796 0.791010   
+class 3rd class -0.900905   0.144787 -6.2223 0.001568 **
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+                Estimate Std. Error t value  Pr(>|t|)    
+Intercept scale -4.04624    0.54017 -7.4907 0.0006701 ***
+log(b)          -7.32930    3.64626 -2.0101 0.1006346    
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -39.39972 on 7 Df
+ Number of iterations: 60 of optim method BFGS gradient method simple 
+
+ final gradients of parameters 
+[1] -0.0203696866 -0.0008164389  0.0041572081  0.0023752619  0.0068211516
+[6]  0.0018952763  0.0007120647
+
+ return code 0 successful 
+\end{Soutput}
+The parameters of the Faddy distribution can now be printed out.
+\begin{Sinput}
+R> predict(outpu.fn, type = "distribution.parameters")
+\end{Sinput}
+\begin{Soutput}
+         out.va       out.vb       out.vc
+1     0.1393159 0.0006560301 -28.10881810
+2    45.9529402 0.0006560301   0.30300954
+3  1594.9387938 0.0006560301  -5.21904057
+4    40.8724192 0.0006560301   0.33977379
+5   392.9331778 0.0006560301  -1.69941164
+6    47.0261619 0.0006560301   0.19278209
+7   330.3710419 0.0006560301  -2.09935775
+8    39.9238096 0.0006560301   0.33263580
+9    27.6100183 0.0006560301  -0.42233391
+10   25.0226409 0.0006560301   0.33016005
+11   20.5073026 0.0006560301  -0.09566396
+12   28.2101400 0.0006560301   0.46262359
+\end{Soutput}
+
+The fit of the general mean and scale-factor model is better than that of \cite{Hilbe2011}(page 268), the log-likelihood values being $-39.400$ and $-43.719$ respectively; although the former has one extra parameter it would be preferred according to AIC. 
+
+\subsection{Take over bids}
+
+These data, originally from \cite{CameronJohansson1997}, are used as example data in \cite{CameronTrivedi2013} as well as  in \cite{SaezConde2013}. The \code{takeover.bids.case} came from the website associated with \cite{CameronTrivedi2013}. The dependent variable \code{NUMBIDS} is the number of bids received by the firm targeted for takeover after the initial bid. As both variables CASE, CONSTANT are equal to 1 throughout they have not been included in package data set. In \cite{SmithFaddy2016}, related to version 2.1 of \pkg{CountsEPPM}, the continuous variables were scaled to have zero mean and unit standard deviation prior to analysis, as it was found that the scaling of the continuous variables improved the model fitting. The changes and additions made to version 3.0 make this unnecessary.
+
+\begin{Sinput}  
+method <- "BFGS"
+attr(method,which = "grad.method") <- "Richardson"
+output.fn  <- CountsEPPM(NUMBIDS ~ LEGLREST + REALREST + FINREST +
+ WHTKNGHT + BIDPREM + INSTHOLD + SIZE + SIZESQ + REGULATN | LEGLREST + 
+ REALREST + FINREST + WHTKNGHT + BIDPREM + INSTHOLD + SIZE + SIZESQ + 
+ REGULATN, data = takeover.bids.case, method = method)
+summary(output.fn)
+\end{Sinput}
+\begin{Soutput}
+ Dependent variable a vector of counts. 
+
+Call:
+CountsEPPM(formula = NUMBIDS ~ LEGLREST + REALREST + FINREST + WHTKNGHT + 
+    BIDPREM + INSTHOLD + SIZE + SIZESQ + REGULATN | LEGLREST + REALREST + 
+    FINREST + WHTKNGHT + BIDPREM + INSTHOLD + SIZE + SIZESQ + REGULATN, 
+    data = takeover.bids.case, method = method)
+
+Model type        : mean and scale-factor 
+Model name        : general 
+Link scale-factor : log 
+
+ Coefficients (model for mean with log link)
+
+t test of coefficients:
+
+               Estimate  Std. Error  t value  Pr(>|t|)    
+(Intercept)  1.66980728  0.69448315   2.4044 0.0179509 *  
+LEGLREST     0.26775754  0.18027398   1.4853 0.1404656    
+REALREST    -0.16655260  0.29485396  -0.5649 0.5733706    
+FINREST      0.67982048  0.34621124   1.9636 0.0522207 .  
+WHTKNGHT     0.81090836  0.23384727   3.4677 0.0007622 ***
+BIDPREM     -1.66354592  0.54936971  -3.0281 0.0030970 ** 
+INSTHOLD    -0.81832858  0.53231273  -1.5373 0.1272260    
+SIZE         0.30109055  0.01639493  18.3649 < 2.2e-16 ***
+SIZESQ      -0.01432358  0.00076058 -18.8325 < 2.2e-16 ***
+REGULATN     0.24525971  0.22094221   1.1101 0.2695077    
+---
+ Signif. codes: "***" 0.001 "**" 0.01 "*" 0.05 "." 0.1  
+
+ Coefficients (model for scale-factor with log link)
+
+t test of coefficients:
+
+             Estimate Std. Error t value Pr(>|t|)
+(Intercept)  0.443199   0.719919  0.6156   0.5395
+LEGLREST    -0.104376   0.186026 -0.5611   0.5759
+REALREST     0.214242   0.212209  1.0096   0.3150
+FINREST      0.533311   0.513642  1.0383   0.3015
+WHTKNGHT     0.267462   0.328230  0.8149   0.4170
+BIDPREM     -0.840780   0.919408 -0.9145   0.3626
+INSTHOLD    -0.027377   0.366394 -0.0747   0.9406
+SIZE         0.145692   0.130238  1.1187   0.2658
+SIZESQ      -0.015642   0.013306 -1.1756   0.2424
+REGULATN     0.263825   0.366727  0.7194   0.4735
+log(b)      -5.339202   6.111304 -0.8737   0.3843
+
+ Type of estimator: ML (maximum likelihood)
+ Log-likelihood: -156.0563 on 21 Df
+ Number of iterations: 244 of optim method BFGS gradient method Richardson 
+
+ final gradients of parameters 
+ [1]  0.0011504814  0.0007030922  0.0013814654  0.0003727108 -0.0005461059
+ [6]  0.0009490258  0.0012592771  0.0046084397  0.0020728355  0.0022824005
+[11] -0.0007277559  0.0017569373 -0.0024497681  0.0009933780 -0.0001212738
+[16] -0.0022219230 -0.0028663406 -0.0052951310  0.0457381566 -0.0008509123
+[21] -0.0001037344
+
+ return code 0 successful 
+\end{Soutput}
+%
+The Bayesian Information Criterion (BIC) can also be calculated using \code{BIC(output.fn)} resulting in a value of 413.6745. Convergence to the maximum likelihood estimates was slow due to the large number (21) of parameters being estimated, the flatness of the log-likelihood surface and a small estimate of the (nuisance) parameter $b$ (negative value of $\log(b)$). The estimate of  $b$ being close to $0$ and the underdispersion (scale-factor $<1$) corresponding to $c<0$ in Equation~2 of \cite{SmithFaddy2016} means that the zero-probability can be very small (Equation~1 of \cite{SmithFaddy2016}). This model with a log-likelihood value of $-156.06$ and 21 parameters fits better than that from \cite{SaezConde2013} with $-157.86$ and 15 parameters. But the six extra parameters associated with a relatively small increase in log-likelihood means that the BIC value of $ 413.67$ is larger than those of the models in \cite{SaezConde2013}: $398.1$, $393.5$ and $388.3$. \cite{SaezConde2013} did not report details of fitting a model with the full set of 10 variables in both linear predictors, suggesting that they could not achieve convergence of their fitting algorithm for this model. The variables \cite{SaezConde2013} do not include in their dispersion model as they were claimed to be not significant are \code{LEGLREST}, \code{WHTKNGHT}, \code{INSTHOLD}, \code{SIZE}, \code{SIZESQ}. There is reasonable agreement between the results reported above and those of \cite{SaezConde2013} about the significant variables in the mean model; in both, \code{SIZE} and \code{SIZESQ} have very large $t$~statistics. However, in the dispersion model the results reported above show that \code{SIZE} and \code{SIZESQ} also have very large $t$~statistics, whereas in the \cite{SaezConde2013} models they were not included. Residual plots as in \cite{betareg2010} can be produced.
+
+\begin{Sinput}
+layout(matrix(c(1:6), byrow=TRUE, ncol=2))
+plot(output.fn, which = 1, type = "response")
+plot(output.fn, which = 2, type = "pearson")
+plot(output.fn, which = 3, type = "spearson")
+plot(output.fn, which = 4, type = "likelihood")
+plot(output.fn, which = 5, type = "deviance")
+plot(output.fn, which = 6, type = "sdeviance")
+\end{Sinput}
+%
+\begin{figure}[t!]
+\centering
+\includegraphics[width=0.80\textwidth, trim=0 10 0 10, clip]{vignette_FigureTwo.jpg}
+\caption{Residual plots.} \label{figure:two}
+\end{figure}
+%
+Examination of the estimated $\lambda_i$ sequences of (birth) rate parameters (Equation~2 of \cite{SmithFaddy2016}) shows that the $\lambda_0$ values are generally very different from the $\lambda_i$ values for $i \ge 1$, as a consequence of the small estimate of the parameter $b$. A more appropriate model for these data might be one that treats the zero counts differently from the non-zero counts; this makes some sense as a zero count would correspond to the initial bid being accepted by the targeted firm, and different circumstances (in the form of different covariate dependence) might be operating. Such a model is not readily constructed  from those considered here, and is therefore beyond the scope of the functions developed. Such modeling will be the subject of future work.
+%
+\section{Concluding remarks}
+
+This vignette has described the use of version 3.0 of the \proglang{R} package \pkg{CountsEPPM} to fit EPPMs to count data that exhibit under- or over-dispersion relative to the Poisson distribution. A variety of covariate dependencies and data structures are covered in examples that illustrate the variety of ways in which the package can be used in the analysis of count data. 
+
+As described in \cite{FaddySmith2005} and \cite{FaddySmith2012}, the mean and scale-factor of binary data can be modeled using EPPMs in a similar way to that described here for count data. A package \pkg{BinaryEPPM} is available in CRAN, and an article describing its use will shortly be appearing in the Journal of Statistical Software. Dependent on how the further work goes, similar functions, etc., may be developed for the model (zero and non-zero counts treated differently) mentioned in the last paragraph of the previous section. 
+
+\bibliography{vignette}
+
+\end{document} 

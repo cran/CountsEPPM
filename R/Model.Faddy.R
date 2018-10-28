@@ -1,5 +1,5 @@
 Model.Faddy <-
-function(parameter,model,covariates.matrix.mean,
+function(parameter,model.name,link=link,covariates.matrix.mean,
                 offset.mean,fixed.b,vnmax) {
 #  data as number of trials & number of successes
 #  the parameters c & log(b) are scalars and are the last parameters in the parameter vector   
@@ -13,23 +13,23 @@ function(parameter,model,covariates.matrix.mean,
    va   <- matrix(c(rep(1,nobs)),ncol=1)
    r.parameter <- rep(0,npar.one) 
    r.parameter <- parameter[1:npar.one]
-   va <- exp(covariates.matrix.mean%*%r.parameter + offset.mean)
-   if (model=="Poisson") { b <- 1
-                           c <- 0 } # end of model
-   if (model=="negative binomial") { npar <- npar + 1 
-                                     b <- exp(parameter[npar])
-                                     c <- 1 } # end of model
+   va <- attr(link, which="mean")$linkinv(covariates.matrix.mean%*%r.parameter + offset.mean)
+   if (model.name=="Poisson") { b <- 1
+                                c <- 0 } # end of model.name
+   if (model.name=="negative binomial") { npar <- npar + 1 
+                                          b <- exp(parameter[npar])
+                                          c <- 1 } # end of model.name
 # parameter b fixed
-   if (model=="negative binomial fixed b") { b <- fixed.b 
-                                             c <- 1 } # end of model
-   if (model=="Faddy distribution") { nparm1 <- npar + 1
-                                      npar   <- npar + 2 
-                                      c <- parameter[nparm1]
-                                      b <- exp(parameter[npar]) } # end of model
+   if (model.name=="negative binomial fixed b") { b <- fixed.b 
+                                                  c <- 1 } # end of model.name
+   if (model.name=="Faddy distribution") { nparm1 <- npar + 1
+                                           npar   <- npar + 2 
+                                           c <- parameter[nparm1]
+                                           b <- exp(parameter[npar]) } # end of model.name
 # parameter b fixed
-   if (model=="Faddy distribution fixed b") { npar <- npar + 1
-                                      b <- fixed.b 
-                                      c <- parameter[npar] } # end of model
+   if (model.name=="Faddy distribution fixed b") { npar <- npar + 1
+                                                   b <- fixed.b 
+                                                   c <- parameter[npar] } # end of model.name
    probabilities <- rep(list(0),nobs)
    threeparameter[2] <- b
    threeparameter[3] <- c 
@@ -45,6 +45,6 @@ function(parameter,model,covariates.matrix.mean,
 # c > 1 indicated, all probabilities set to 0
                                   } else { probability <- rep(0,nmax1) } # end of if c<=1
                         probabilities[[i]] <- probability } # end of for i
-   output <- list(model=model,estimates=parameter,probabilities=probabilities,
+   output <- list(model.name=model.name,link=link,estimates=parameter,probabilities=probabilities,
                   FDparameters=data.frame(out.va,out.vb,out.vc))
    return(output)        }

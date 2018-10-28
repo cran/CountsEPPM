@@ -7,5 +7,5 @@ function (vlambda) {
                    cbind(0,rbind(diag(vwork, nmax),0)) 
                  } else { tran  <- cbind(rbind(diag(-vlambda, nmax1))) } 
     tran  <- expm(tran)
-    prob  <- tran[1,]     
+    prob  <- round(tran[1,], digits=20)     
     return(prob)                }

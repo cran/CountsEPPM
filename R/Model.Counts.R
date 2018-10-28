@@ -1,19 +1,19 @@
 Model.Counts <-
-function(parameter,model.type,model,covariates.matrix.mean,
-                   covariates.matrix.variance,offset.mean,offset.variance,
-                   scale.factor.model,fixed.b,vnmax) {
+function(parameter,model.type,model.name,link,covariates.matrix.mean,
+                   covariates.matrix.scalef,offset.mean,offset.scalef,
+                   fixed.b,vnmax) {
    if (model.type=="mean only") { 
-                   output <- Model.Faddy(parameter,model,covariates.matrix.mean,
+                   output <- Model.Faddy(parameter,model.name,link,covariates.matrix.mean,
                                        offset.mean,fixed.b,vnmax)
-                                } # end of over-dispersed models
-   if (model.type=="mean and variance") { 
-          if ((model=="general") | (model=="general fixed b")) {
-                   output <- Model.FaddyJMV.general(parameter,covariates.matrix.mean,
-                                         covariates.matrix.variance,offset.mean,
-                                         offset.variance,scale.factor.model,fixed.b,vnmax) }
-          if (model=="limiting") { 
-                   output <- Model.FaddyJMV.limiting(parameter,covariates.matrix.mean,
-                                         covariates.matrix.variance,offset.mean,
-                                         offset.variance,scale.factor.model,vnmax) }
-                                } # end of under-dispersed model
+                                } # end of mean only model
+   if (model.type=="mean and scale-factor") { 
+          if ((model.name=="general") | (model.name=="general fixed b")) {
+                   output <- Model.FaddyJMV.general(parameter,link,covariates.matrix.mean,
+                                         covariates.matrix.scalef,offset.mean,
+                                         offset.scalef,fixed.b,vnmax) }
+          if (model.name=="limiting") { 
+                   output <- Model.FaddyJMV.limiting(parameter,link,covariates.matrix.mean,
+                                         covariates.matrix.scalef,offset.mean,
+                                         offset.scalef,vnmax) }
+                                } # end of mean and scale-factor model
    return(output)                          }

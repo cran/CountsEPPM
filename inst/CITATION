@@ -1,0 +1,22 @@
+bibentry(bibtype = "Article",
+  title        = "Mean and Variance Modeling of Under- and Overdispersed Count Data",
+  author       = c(person(given = c("David", "M."),
+                          family = "Smith",
+                          email = "david.m.smith@truvenhealth.com"),
+                   person(given = c("Malcolm", "J."),
+                          family = "Faddy")),
+  journal      = "Journal of Statistical Software",
+  year         = "2016",
+  volume       = "69",
+  number       = "6",
+  pages        = "1--23",
+  doi          = "10.18637/jss.v069.i06",
+
+  header       = "To cite CountsEPPM in publications use:",
+  textVersion  =
+  paste("David M. Smith, Malcolm J. Faddy (2016).",
+        "Mean and Variance Modeling of Under- and Overdispersed Count Data.",
+        "Journal of Statistical Software, 69(6), 1-23.",
+        "doi:10.18637/jss.v069.i06")
+)
+

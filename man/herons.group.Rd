@@ -18,7 +18,8 @@ List of 2
 }
 \source{
 Zhu J, Eickhoff J, Kaiser M (2003). Modelling the Dependence between Number of Trials and Success Probability in Beta-Binomial-Poisson Mixture Distributions. 
-\emph{Biometrics}, \bold{59}, 955-961. \doi{10.1111/j.0006-341x.2003.00110.x}.
+\emph{Biometrics}, \bold{59}, 955-961.
+\doi{10.1111/j.0006-341X.2003.00110.x}.
 }
 \examples{
 data(herons.group)
