@@ -62,7 +62,7 @@ function(x, ...) {
              cat("\n","Type of estimator: ML (maximum likelihood)")
              cat("\n","Log-likelihood:",x$loglik,"on",length(x$optim$par),"Df", sep=" ")
              if (length(x$optim$par)==1) { 
-                cat("\n","Single parameter Poisson or negative binomial fixed b so no use of optim", sep=" ")
+                cat("\n","Single parameter Poisson so no use of optim", sep=" ")
                                   } else {
                 optim.method <- x$method
                 if (optim.method=="Nelder-Mead") { 

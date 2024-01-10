@@ -30,7 +30,7 @@ Data originally from Jaggia and Thosar (1993) and used as an example in Cameron 
 }
 \source{
 Stata data file obtained from A.C. Cameron's webpage 
-\url{http://cameron.econ.ucdavis.edu/}.
+\url{https://cameron.econ.ucdavis.edu/}.
 }
 \references{
 Cameron, A.C., Trivedi, P.K. (2013). Regression Analysis of Count Data. Cambridge University Press, second edition.

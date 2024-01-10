@@ -24,7 +24,7 @@ Right (upper) truncation value.
 Vector of probabilities for truncated distribution.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \examples{
 probability <- c(3.375659e-08, 1.023277e-05, 5.440752e-04,

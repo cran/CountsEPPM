@@ -63,7 +63,7 @@ Set to the method to be used to calculate the gradients either "simple" or "Rich
 The log likelihood with an attribute of the gradients produced by the function grad from the package numDerive is returned.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \references{
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and scale-factor. 

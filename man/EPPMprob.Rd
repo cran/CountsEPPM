@@ -18,10 +18,10 @@ vlambda is a vector of rates of an extended Poisson process.
 The value returned is a vector of probabilities.
 }
 \references{
-Bates D, Maechler M (2016). Matrix: Sparse and Dense Matrix Classes and Methods. 
-R package version 1.2-4, \url{https://CRAN.R-project.org/package=Matrix}. 
+Bates D, Maechler M (2023). Matrix: Sparse and Dense Matrix Classes and Methods. 
+R package version 1.6-4, \url{https://CRAN.R-project.org/package=Matrix}. 
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \keyword{ distribution }

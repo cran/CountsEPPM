@@ -31,7 +31,7 @@ One of a set of standard extractor functions for fitted model objects of class
 Vector of coefficients of fitted regression model.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \seealso{
 \code{\link[betareg]{betareg}} 

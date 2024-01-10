@@ -19,7 +19,7 @@ currently not used.
 }
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \examples{
 \dontrun{

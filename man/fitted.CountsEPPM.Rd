@@ -21,7 +21,7 @@ currently not used.
 \code{\link[stats:stats-package]{fitted}} 
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \examples{
 data("herons.group") 

@@ -41,7 +41,7 @@ The list output with elements
 \item{probabilities}{Vector of probabilities}
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \references{
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 

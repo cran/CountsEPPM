@@ -36,7 +36,6 @@ function(parameter,link,covariates.matrix.mean,
 # start of under-dispersed equations
 # solve equation (10) for beta by Newton-Raphson iteration
          x    <- 0
-#         xinc <- (1 - cvariance/cmean) / (1/2)
          xinc <- 2*(1 - cvariance/cmean)
          iter <- 0
          while ((iter<101) & (abs(xinc)>=1.e-10) & (is.finite(xinc)==TRUE)) { 

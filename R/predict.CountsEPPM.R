@@ -213,5 +213,35 @@ function (object, newdata = NULL, type = c("response", "linear.predictor.mean",
                               } # end of for loop
              probabilities  
         }, distribution.parameters = { 
+
+
+for ( i in 1:nobs) {
+   nmax <- object$vnmax[i]
+   nmax1 <- nmax + 1
+   vnum <- c(0:nmax)
+if (object$model.name!="limiting") {
+   a   <- rep(output.model$FDparameters$out.va[i],nmax1)
+   b   <- rep(output.model$FDparameters$out.vb[i],nmax1) 
+   c   <- rep(output.model$FDparameters$out.vc[i],nmax1)
+   if ((output.model$FDparameters$out.vc[i]!=1) & 
+       (output.model$FDparameters$out.vc[i]!=0)) { 
+      vlambda <- exp(log(a)+c*log(b+vnum))
+                                             } else {
+      if (output.model$FDparameters$out.vc[i]==0) { vlambda <- a }
+      if (output.model$FDparameters$out.vc[i]==1) { vlambda <- a*(b+vnum) }
+                } # end if c < 1 & = 0                                               
+                                   } else {
+      alpha <- rep(output.model$FDparameters$out.valpha[i],nmax1)
+      beta  <- rep(output.model$FDparameters$out.beta[i],nmax1)
+      vlambda <- alpha*exp(beta*vnum)
+                                          } # end of model.name==limiting
+# limiting value for lambda
+      lambda.limit <- 745
+      vlambda <- sapply(1:nmax1, function(j) 
+         if ((is.finite(vlambda[j])==FALSE) | (vlambda[j]>lambda.limit)) { 
+            vlambda[j] <- lambda.limit  
+               } else { vlambda[j] <- vlambda[j] } )
+                   } # end of for loop i
+
              output.model$FDparameters } )
         return(rval) }

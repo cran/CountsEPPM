@@ -37,7 +37,7 @@ Zeileis A, Hothorn T. (2002). Diagnostic Checking in Regression Relationships. \
 An object of class \code{"anova"} which contains the residual degrees of freedom, the difference in degrees of freedom, Wald statistic (either \code{"Chisq"} or \code{"F"}) and corresponding p value.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \seealso{
 \code{\link[lmtest:waldtest]{waldtest}} 

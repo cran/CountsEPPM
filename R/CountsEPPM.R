@@ -361,12 +361,12 @@ function(formula,data,subset=NULL,na.action=NULL,weights=NULL,
          if ((model.name=="general fixed b") | (model.name=="limiting")) { 
             parameter <- c(initial.mean,initial.scalef) 
             names(parameter) <- c(names(initial.mean),names(initial.scalef)) }
-# Calculating log likelihood for initial estimates for regression of log(variance) (mean)
-# on variance model 
+# Calculating log likelihood for initial estimates for regression of log(scale-factor) (mean)
+# for mean and scale-factor model 
          loglikelihood <- LL.Regression.Counts(parameter,model.type,model.name,
                link=link,list.data,covariates.matrix.mean,covariates.matrix.scalef,
                offset.mean,offset.scalef,ltvalue,utvalue,fixed.b,weights,grad.method)
-# Calculating log likelihood for initial estimates for log(variance) of 0 for
+# Calculating log likelihood for initial estimates for log(scale-factor) of 0 for
 # the variance model 
          wks <- length(initial.scalef)
          if (model.name=="general")  { wk.parameter <- c(initial.mean,rep(0,wks),0) 
@@ -447,7 +447,7 @@ function(formula,data,subset=NULL,na.action=NULL,weights=NULL,
 
 # Checking that fixed.b has a positive value if that model is used
     if (((model.name=="general fixed b") | 
-         (model.name=="negative binomial fixed b") |
+         (model.name=="negative binomial fixed b distribution fixed b") |
          (model.name=="Faddy distribution fixed b")) & 
         ((is.na(fixed.b)==TRUE) | (fixed.b<=0))) { cat("\n","value of fixed.b is NA or <=0","\n")
               return(object=NULL) }

@@ -68,11 +68,11 @@ Set to the method to be used to calculate the gradients either "simple" or "Rich
 A vector of numerical first derivatives.
 }
 \references{
-Gilbert P, Varadhan R. (2015). numDeriv: Accurate Numerical Derivatives. R Package version 2014.2-1, 
+Gilbert P, Varadhan R. (2016). numDeriv: Accurate Numerical Derivatives. R Package version 2016.8-1.1, 
 \url{https://CRAN.R-project.org/package=numDeriv}.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \examples{
 \dontrun{

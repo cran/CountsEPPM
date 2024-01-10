@@ -48,7 +48,7 @@ A vector of the maximum counts for each vector in list.counts i.e. the list of g
 Output which is the output from either Model.Faddy, Model.Faddy.general, or Model.Faddy.limiting
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \references{
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 

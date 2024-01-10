@@ -89,7 +89,7 @@ Zeileis A, Croissant Y. (2010). Extended Model Formulas in R: Multiple Parts and
 \emph{Journal of Statistical Software}, \bold{34}(1), 1-13. \doi{10.18637/jss.v034.i01}.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \examples{
 data(herons.group)

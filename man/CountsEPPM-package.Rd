@@ -19,7 +19,7 @@ Using Generalized Linear Model (GLM) terminology, the functions utilize linear p
 to fit the regression models. Smith and Faddy (2016) gives further details about the package as well as examples of its use.
 }
 \author{
-David M. Smith <smithdm1@us.ibm.com>
+David M. Smith <dmccsmith@verizon.net>
 }
 \references{
 Faddy M, Smith D. (2011). Analysis of count data with covariate dependence in both mean and variance. 
